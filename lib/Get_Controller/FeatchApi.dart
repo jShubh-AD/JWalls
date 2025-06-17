@@ -1,0 +1,212 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart'as http;
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:walpy/Models/Wallpapers.dart';
+
+
+class ApiCall extends GetxController {
+  final RxList<Wallpapers> photos = <Wallpapers>[].obs;
+  final RxList<Wallpapers> searchPhotos = <Wallpapers>[].obs;
+
+  Rx<bool> isLoading = true.obs;
+  Rx<bool> isOnline = false.obs;
+  Rx<bool> isPagination = false.obs;
+  Rx<bool> isSearchLoading =true.obs;
+  Rx<bool> noImageFound = false.obs;
+  Rx<bool> hasMore = true.obs;
+  int homPageNum = 1;
+  int searchPageNum = 1;
+
+  StreamSubscription? _isOnInternet;
+  final TextEditingController searchController = TextEditingController();
+  final ScrollController scrollController = ScrollController();
+  final ScrollController searchScrollController =ScrollController();
+
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchApi();
+    _isOnInternet = InternetConnection().onStatusChange.listen((event){
+      if(event == InternetStatus.connected){
+        isOnline.value = true;
+        if(photos.isEmpty && !isLoading.value){
+          fetchApi();
+        }
+      }
+      else{
+        isOnline.value = false;
+      }
+    });
+  }
+
+  @override
+  void onReady(){
+    super.onReady();
+    setUpScrollListener();
+    setUpSearchScrollListener();
+  }
+  @override
+  void onClose(){
+    _isOnInternet!.cancel();
+    searchController.clear();
+    super.onClose();
+  }
+
+  void searchApi({required String search})async{
+    String searchUrl= 'https://api.unsplash.com/search/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=20&page=$searchPageNum&query=$search';
+    try{
+      if (searchPageNum == 1) {
+        isSearchLoading.value = true;
+        searchPhotos.clear();
+      }
+      final searchResponse = await http.get(Uri.parse(searchUrl));
+      if (searchResponse.statusCode == 200) {
+        final Map<String, dynamic> sData = jsonDecode(searchResponse.body);
+        final List<dynamic> results = sData['results'];
+
+        if(results.isEmpty && searchPageNum ==1){
+          noImageFound.value = true;
+        }else{
+          noImageFound.value = false;
+        }
+        final sWalls = await compute(heavySearch, results);
+        searchPhotos.addAll(sWalls);
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          for (int j = 0; j < searchPhotos.length && j < 5; j++) {
+            precacheImage(CachedNetworkImageProvider(searchPhotos[j].urls!.small!), Get.context!);
+          }
+        });
+      }
+     else  {
+        Get.snackbar(
+          'Error',
+          'Server error: ${searchResponse.statusCode}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white,
+        );
+      }
+      isOnline.value = true;
+    } on SocketException {
+      Get.snackbar(
+        'No Internet',
+        'Please check your connection.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Something went wrong!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    } finally {
+      isSearchLoading.value = false;
+      isPagination.value = false;
+    }
+  }
+
+  void setUpScrollListener(){
+   scrollController.addListener((){
+    if(scrollController.position.pixels >= scrollController.position.maxScrollExtent - 700 && !isPagination.value && !isLoading.value){
+      isPagination.value = true;
+      isLoading.value = true;
+        homPageNum++;
+        fetchApi();
+    }
+    });
+  }
+
+  void setUpSearchScrollListener(){
+    searchScrollController.addListener((){
+      if(searchScrollController.position.pixels >= searchScrollController.position.maxScrollExtent - 700 && !isPagination.value && !isSearchLoading.value){
+        isPagination.value = true;
+        isSearchLoading.value = true;
+        searchPageNum++;
+       searchApi(search: searchController.text);
+      }
+    });
+  }
+
+  Future<void> fetchApi() async {
+    String url = 'https://api.unsplash.com/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=20&page=$homPageNum';
+    try {
+      if (homPageNum == 1) {isLoading.value = true;}
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final parsedWalls = await compute(heavyTask, response.body);
+
+        if (homPageNum == 1) {
+          photos.clear(); // Clear on first page only
+        }
+
+        final existingIds = photos.map((e) => e.id).toSet();
+        final uniquePhotos = parsedWalls.where((w) => !existingIds.contains(w.id)).toList();
+        photos.addAll(uniquePhotos);
+
+        // Pre-cache a few images for smoother UI
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          for (int j = 0; j < photos.length && j < 5; j++) {
+            precacheImage(CachedNetworkImageProvider(photos[j].urls!.small!), Get.context!);
+          }
+        });
+
+      } else {
+        Get.snackbar(
+          'Error',
+          'Server error: ${response.statusCode}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white,
+        );
+      }
+
+      isOnline.value = true;
+    } on SocketException {
+      Get.snackbar(
+        'No Internet',
+        'Please check your connection.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Something went wrong!',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+      isPagination.value = false;
+    }
+  }
+
+  static Future<List<Wallpapers>> heavyTask(String responseBody) async{
+    List<Wallpapers> wallpaper = <Wallpapers>[];
+    List<dynamic> data = jsonDecode(responseBody);
+    for (Map i in data) {
+     wallpaper.add(Wallpapers.fromJson(i));
+    }
+    return wallpaper;
+  }
+  static Future<List<Wallpapers>> heavySearch(List<dynamic> responseBody) async{
+    List<Wallpapers> wallpaper = <Wallpapers>[];
+    wallpaper = responseBody.map((e)=> Wallpapers.fromJson(e)).toList();
+    return wallpaper;
+  }
+}

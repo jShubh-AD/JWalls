@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:walpy/Get_Controller/SetWallpaper.dart';
 import 'package:walpy/Widgets/FloatingButtons.dart';
 
@@ -55,11 +58,11 @@ class ViewImage extends StatelessWidget {
 
           FloatingButtons(
             edit:  Icon(Icons.edit,color: Colors.black,),
-          onPressed: () { },
+            onPressed: () { },
             download: Icon(Icons.download,color: Colors.black,),
+            downloadPressed: () {downloadToGallery(imageUrl);},
             info: Icon(Icons.info_outline,color: Colors.black,),
           profilePressed: () {  },
-          downloadPressed: () {  },
           infoPressed: () {  },
           )
         ],
@@ -81,5 +84,30 @@ class ViewImage extends StatelessWidget {
         ),
       )
     );
+  }
+  Future<void> downloadToGallery (String imageUrl) async{
+    final permission = await Permission.storage.request();
+    if(!permission.isGranted && permission != permission.isLimited){
+      Get.snackbar('Permission Denied.', 'Please allow the storage permission to download.');
+      return;
+    }
+    try {
+      // Get file from cached
+     final file = await DefaultCacheManager().getSingleFile(imageUrl);
+
+     // Read image bytes
+      final imageBytes = await file.readAsBytes();
+      // Save to gallery
+      final results = ImageGallerySaverPlus.saveImage(imageBytes);
+      print(results);
+      if(results != null){
+        Get.snackbar('Image saved', 'Image saved in gallery\n Show your support to dev.');
+      }else{
+        Get.snackbar('Something went wrong', '');
+      }
+
+    }catch(e){
+      Get.snackbar('Error', 'Something went wrong: $e');
+    }
   }
 }

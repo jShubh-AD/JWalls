@@ -5,10 +5,9 @@ class FloatingButtons extends StatelessWidget {
   const FloatingButtons({
     super.key,
     required this.edit,
-    required this.onPressed,
     required this.download,
     required this.info,
-    required this.profilePressed,
+    required this.editPressed,
     required this.downloadPressed,
     required this.infoPressed
   });
@@ -16,8 +15,7 @@ class FloatingButtons extends StatelessWidget {
   final Widget edit;
   final Widget download;
   final Widget info;
-  final void Function() onPressed;
-  final void Function() profilePressed;
+  final void Function() editPressed;
   final void Function() downloadPressed;
   final void Function() infoPressed;
 
@@ -28,15 +26,17 @@ class FloatingButtons extends StatelessWidget {
       elevation: 0,
       heroTag: null,
       spacing: 4,
+      overlayOpacity: .3,
       childrenButtonSize: Size(55, 66),
       backgroundColor: Colors.white,
+      overlayColor: Colors.black,
       animatedIcon: AnimatedIcons.menu_close,
       animatedIconTheme: IconThemeData(color: Colors.black),
       children: [
         SpeedDialChild(
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            onTap: profilePressed,
+            onTap: editPressed,
             child: edit
         ),
         SpeedDialChild(

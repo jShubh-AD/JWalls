@@ -16,7 +16,7 @@ final FocusNode searchFocusNode = FocusNode();
     final darkMode = isDarkMode(context);
     return TextField(
       focusNode: searchFocusNode,
-      autofocus: true,
+      //autofocus: true,
       textInputAction: TextInputAction.search,
       onSubmitted: onSubmitted,
       style: TextStyle(

@@ -30,35 +30,28 @@ class SetWallpaper extends GetxController{
   Future<void> setEditedWall(GlobalKey boundaryKey) async {
     try {
       // 1️⃣ Grab the RenderRepaintBoundary
-      final boundary = boundaryKey.currentContext?.findRenderObject()
-      as RenderRepaintBoundary?;
+      final boundary = boundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) {
         Get.snackbar('Error', 'Could not capture the edit.');
         return;
       }
-
       // 2️⃣ Capture an image at high resolution (adjust ratio if needed)
       final ui.Image uiImage = await boundary.toImage(pixelRatio: 3.0);
-      final byteData =
-      await uiImage.toByteData(format: ui.ImageByteFormat.png);
+      final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
       final bytes = byteData!.buffer.asUint8List();
 
       // 3️⃣ Save PNG to a temp file
       final tempDir = await getTemporaryDirectory();
-      final filePath =
-          '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.png';
+      final filePath = '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File(filePath);
       await file.writeAsBytes(bytes);
 
       // 4️⃣ Set as wallpaper (both screens)
-      final ok = await WallpaperManagerFlutter()
-          .setWallpaper(file, WallpaperManagerFlutter.bothScreens);
+      final ok = await WallpaperManagerFlutter().setWallpaper(file, WallpaperManagerFlutter.bothScreens);
 
       Get.snackbar(
         ok ? 'Wall Applied' : 'Failed',
-        ok
-            ? 'Your personalised wall is applied!'
-            : 'Couldn’t set wall, please try again.',
+        ok ? 'Your personalised wall is applied!' : 'Couldn’t set wall, please try again.',
       );
     } catch (e) {
       Get.snackbar('Error', 'Exception: $e');

@@ -7,85 +7,103 @@ import '../Get_Controller/FeatchApi.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
-      static const BorderRadius borderRadius24 = BorderRadius.all(Radius.circular(24));
+
+  static const BorderRadius borderRadius24 = BorderRadius.all(
+    Radius.circular(24),
+  );
 
   @override
   State<Homepage> createState() => _HomepageState();
 }
 
 class _HomepageState extends State<Homepage>
-    with AutomaticKeepAliveClientMixin{
+    with AutomaticKeepAliveClientMixin {
   final ApiCall fetchWalls = Get.find<ApiCall>();
+  //final FavoriteController like = Get.put(FavoriteController());
 
   @override
   bool get wantKeepAlive => true;
 
+  //bool isLiked = false;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return SafeArea(
-      child: Obx(() {
-        if (fetchWalls.isLoading.value && fetchWalls.photos.isEmpty) {
-          return Center(child: CircularProgressIndicator());
-        }
+    return Obx(() {
+      if (fetchWalls.isLoading.value && fetchWalls.photos.isEmpty) {
+        return Center(child: CircularProgressIndicator());
+      }
 
-        if (fetchWalls.photos.isEmpty) {
-          return Center(child: Text('No walls found'));
-        }
+      if (fetchWalls.photos.isEmpty) {
+        return Center(child: Text('No walls found'));
+      }
 
-        return MasonryGridView.count(
-          controller: fetchWalls.scrollController,
-          itemCount: fetchWalls.photos.length + (fetchWalls.isPagination.value ? 1 : 0), // extra for loader
-          crossAxisCount: 2,
-          mainAxisSpacing: 5,
-          crossAxisSpacing: 5,
+      return MasonryGridView.count(
+        controller: fetchWalls.scrollController,
+        itemCount:
+            fetchWalls.photos.length,
+        // extra for loader
+        crossAxisCount: 2,
+        mainAxisSpacing: 5,
+        crossAxisSpacing: 5,
 
-          itemBuilder: (context, index) {
-            double ht = index.isEven ? 200 : 250;
-            if (index == fetchWalls.photos.length) {
-              return fetchWalls.isPagination.value ? Container(
-                  height: ht,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: Homepage.borderRadius24),
-                  child: Center(child: CircularProgressIndicator())) : SizedBox.shrink();
-            }
-            final wallpaper = fetchWalls.photos[index];
-            final url = wallpaper.urls!.small!;
-            return Container(
+        itemBuilder: (context, index) {
+          final wallpaper = fetchWalls.photos[index];
+          final url = wallpaper.urls!.small!;
+          double ht = index.isEven ? 200 : 250;
+          return Stack(
+            children: [
+              Container(
                 height: ht,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: Homepage.borderRadius24,
-                  color: Colors.grey
+                  color: Colors.grey,
                 ),
                 child: ClipRRect(
                   borderRadius: Homepage.borderRadius24,
                   child: GestureDetector(
                     onTap: () {
-                      Get.to(() => ViewImage(
-                        imageUrl: wallpaper.urls!.full!,
-                        blurHash: wallpaper.blurHash!,
-                        authorUrl: wallpaper.user!.profileImage!.medium!,
-                        id: wallpaper.id!,
-                      ));
-                      },
-                    child: Hero(
-                      tag: wallpaper.id!,
-                      child: CachedNetworkImage(
+                      print(wallpaper.id);
+                      Get.to(
+                        () => ViewImage(
+                          imageUrl: wallpaper.urls!.full!,
+                          id: wallpaper.id!,
+                        ),
+                      );
+                    },
+                    child: CachedNetworkImage(
                       fadeInDuration: const Duration(milliseconds: 0),
                       fadeOutDuration: const Duration(milliseconds: 0),
                       imageUrl: url,
                       fit: BoxFit.cover,
-                      ),
                     ),
                   ),
+                ),
               ),
-            );
-          },
-        ).paddingSymmetric(horizontal: 5);
-      })
-    );
+              Positioned(
+              bottom: 10,
+                right: 10,
+                child:  InkWell(
+                    onTap: () {},
+                    child: Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withOpacity(0.3),
+                      ),
+                      child: Icon(
+                        Icons.favorite_border,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+              )
+            ],
+          );
+        },
+      ).paddingSymmetric(horizontal: 5);
+    });
   }
 }

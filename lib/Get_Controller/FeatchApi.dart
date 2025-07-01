@@ -7,12 +7,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart'as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:walpy/Models/Wallpapers.dart';
+import 'package:walpy/core/http_const/api_const.dart';
+import 'package:walpy/data/DataSource/user_datasource.dart';
+import 'package:walpy/data/Models/UserModel.dart';
+import 'package:walpy/data/Models/Wallpapers.dart';
 
 
 class ApiCall extends GetxController {
   final RxList<Wallpapers> photos = <Wallpapers>[].obs;
   final RxList<Wallpapers> searchPhotos = <Wallpapers>[].obs;
+
+  final _repo = User_Datasource();
+
+  Rx<bool> isUserLoading = false.obs;
+  final user = Rxn<UserModel>();
 
   Rx<bool> isLoading = true.obs;
   Rx<bool> isOnline = false.obs;
@@ -59,8 +67,17 @@ class ApiCall extends GetxController {
     super.onClose();
   }
 
+  Future<UserModel?> loadUser (String id) async{
+    isUserLoading.value = true;
+    user.value = await _repo.fetchUser(id);
+    isUserLoading.value = false;
+    return user.value;
+  }
+
+
+
   void searchApi({required String search})async{
-    String searchUrl= 'https://api.unsplash.com/search/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=20&page=$searchPageNum&query=$search';
+    String searchUrl= 'https://api.unsplash.com/search/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=19&page=$searchPageNum&query=$search';
     try{
       if (searchPageNum == 1) {
         isSearchLoading.value = true;
@@ -140,7 +157,7 @@ class ApiCall extends GetxController {
   }
 
   Future<void> fetchApi() async {
-    String url = 'https://api.unsplash.com/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=20&page=$homPageNum';
+    String url = '${ApiConst.fetchImageId.baseUrl()}/${ApiConst.key}&per_page=19&page=$homPageNum';
     try {
       if (homPageNum == 1) {isLoading.value = true;}
       final response = await http.get(Uri.parse(url));

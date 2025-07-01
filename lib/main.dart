@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
 import 'Get_Controller/FeatchApi.dart';
 import 'UI/Home.dart';
-import 'Theme/SystemTheme.dart';
+import 'core/Theme/SystemTheme.dart';
+import 'features/fav/data/fav-model.dart';
 
-void main() {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+
+  var dir = await getApplicationDocumentsDirectory();
+  Hive.init(dir.path);
+  Hive.registerAdapter(FavModelAdapter());
+  await Hive.openBox<FavModel>('favorites');
+
   Get.put(ApiCall());
   Get.put(NaviController());
   runApp(const MyApp());

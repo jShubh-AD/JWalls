@@ -24,8 +24,7 @@
 class Wallpapers {
   Wallpapers({
       String? id, 
-      String? slug, 
-      AlternativeSlugs? alternativeSlugs, 
+      String? slug,
       String? createdAt, 
       String? updatedAt, 
       String? promotedAt, 
@@ -43,11 +42,10 @@ class Wallpapers {
       List<dynamic>? currentUserCollections, 
       dynamic sponsorship, 
       TopicSubmissions? topicSubmissions, 
-      String? assetType, 
-      User? user,}){
+      String? assetType,
+  }){
     _id = id;
     _slug = slug;
-    _alternativeSlugs = alternativeSlugs;
     _createdAt = createdAt;
     _updatedAt = updatedAt;
     _promotedAt = promotedAt;
@@ -66,13 +64,11 @@ class Wallpapers {
     _sponsorship = sponsorship;
     _topicSubmissions = topicSubmissions;
     _assetType = assetType;
-    _user = user;
 }
 
   Wallpapers.fromJson(dynamic json) {
     _id = json['id'];
     _slug = json['slug'];
-    _alternativeSlugs = json['alternative_slugs'] != null ? AlternativeSlugs.fromJson(json['alternative_slugs']) : null;
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];
     _promotedAt = json['promoted_at'];
@@ -101,11 +97,9 @@ class Wallpapers {
     _sponsorship = json['sponsorship'];
     _topicSubmissions = json['topic_submissions'] != null ? TopicSubmissions.fromJson(json['topic_submissions']) : null;
     _assetType = json['asset_type'];
-    _user = json['user'] != null ? User.fromJson(json['user']) : null;
   }
   String? _id;
   String? _slug;
-  AlternativeSlugs? _alternativeSlugs;
   String? _createdAt;
   String? _updatedAt;
   String? _promotedAt;
@@ -124,10 +118,8 @@ class Wallpapers {
   dynamic _sponsorship;
   TopicSubmissions? _topicSubmissions;
   String? _assetType;
-  User? _user;
 Wallpapers copyWith({  String? id,
   String? slug,
-  AlternativeSlugs? alternativeSlugs,
   String? createdAt,
   String? updatedAt,
   String? promotedAt,
@@ -146,10 +138,8 @@ Wallpapers copyWith({  String? id,
   dynamic sponsorship,
   TopicSubmissions? topicSubmissions,
   String? assetType,
-  User? user,
 }) => Wallpapers(  id: id ?? _id,
   slug: slug ?? _slug,
-  alternativeSlugs: alternativeSlugs ?? _alternativeSlugs,
   createdAt: createdAt ?? _createdAt,
   updatedAt: updatedAt ?? _updatedAt,
   promotedAt: promotedAt ?? _promotedAt,
@@ -168,11 +158,9 @@ Wallpapers copyWith({  String? id,
   sponsorship: sponsorship ?? _sponsorship,
   topicSubmissions: topicSubmissions ?? _topicSubmissions,
   assetType: assetType ?? _assetType,
-  user: user ?? _user,
 );
   String? get id => _id;
   String? get slug => _slug;
-  AlternativeSlugs? get alternativeSlugs => _alternativeSlugs;
   String? get createdAt => _createdAt;
   String? get updatedAt => _updatedAt;
   String? get promotedAt => _promotedAt;
@@ -191,15 +179,11 @@ Wallpapers copyWith({  String? id,
   dynamic get sponsorship => _sponsorship;
   TopicSubmissions? get topicSubmissions => _topicSubmissions;
   String? get assetType => _assetType;
-  User? get user => _user;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     map['id'] = _id;
     map['slug'] = _slug;
-    if (_alternativeSlugs != null) {
-      map['alternative_slugs'] = _alternativeSlugs?.toJson();
-    }
     map['created_at'] = _createdAt;
     map['updated_at'] = _updatedAt;
     map['promoted_at'] = _promotedAt;
@@ -228,9 +212,6 @@ Wallpapers copyWith({  String? id,
       map['topic_submissions'] = _topicSubmissions?.toJson();
     }
     map['asset_type'] = _assetType;
-    if (_user != null) {
-      map['user'] = _user?.toJson();
-    }
     return map;
   }
 
@@ -259,202 +240,7 @@ Wallpapers copyWith({  String? id,
 /// for_hire : false
 /// social : {"instagram_username":"estoric.wav","portfolio_url":"https://open.spotify.com/artist/6N4Dpg7qAykAxA95NaYKLX?si=qMTQdOPPSdGA_UMfPAGkBw","twitter_username":null,"paypal_email":null}
 
-class User {
-  User({
-      String? id, 
-      String? updatedAt, 
-      String? username, 
-      String? name, 
-      String? firstName, 
-      String? lastName, 
-      dynamic twitterUsername, 
-      String? portfolioUrl, 
-      String? bio, 
-      dynamic location, 
-      Links? links, 
-      ProfileImage? profileImage, 
-      String? instagramUsername, 
-      num? totalCollections, 
-      num? totalLikes, 
-      num? totalPhotos, 
-      num? totalPromotedPhotos, 
-      num? totalIllustrations, 
-      num? totalPromotedIllustrations, 
-      bool? acceptedTos, 
-      bool? forHire, 
-      Social? social,}){
-    _id = id;
-    _updatedAt = updatedAt;
-    _username = username;
-    _name = name;
-    _firstName = firstName;
-    _lastName = lastName;
-    _twitterUsername = twitterUsername;
-    _portfolioUrl = portfolioUrl;
-    _bio = bio;
-    _location = location;
-    _links = links;
-    _profileImage = profileImage;
-    _instagramUsername = instagramUsername;
-    _totalCollections = totalCollections;
-    _totalLikes = totalLikes;
-    _totalPhotos = totalPhotos;
-    _totalPromotedPhotos = totalPromotedPhotos;
-    _totalIllustrations = totalIllustrations;
-    _totalPromotedIllustrations = totalPromotedIllustrations;
-    _acceptedTos = acceptedTos;
-    _forHire = forHire;
-    _social = social;
-}
 
-  User.fromJson(dynamic json) {
-    _id = json['id'];
-    _updatedAt = json['updated_at'];
-    _username = json['username'];
-    _name = json['name'];
-    _firstName = json['first_name'];
-    _lastName = json['last_name'];
-    _twitterUsername = json['twitter_username'];
-    _portfolioUrl = json['portfolio_url'];
-    _bio = json['bio'];
-    _location = json['location'];
-    _links = json['links'] != null ? Links.fromJson(json['links']) : null;
-    _profileImage = json['profile_image'] != null ? ProfileImage.fromJson(json['profile_image']) : null;
-    _instagramUsername = json['instagram_username'];
-    _totalCollections = json['total_collections'];
-    _totalLikes = json['total_likes'];
-    _totalPhotos = json['total_photos'];
-    _totalPromotedPhotos = json['total_promoted_photos'];
-    _totalIllustrations = json['total_illustrations'];
-    _totalPromotedIllustrations = json['total_promoted_illustrations'];
-    _acceptedTos = json['accepted_tos'];
-    _forHire = json['for_hire'];
-    _social = json['social'] != null ? Social.fromJson(json['social']) : null;
-  }
-  String? _id;
-  String? _updatedAt;
-  String? _username;
-  String? _name;
-  String? _firstName;
-  String? _lastName;
-  dynamic _twitterUsername;
-  String? _portfolioUrl;
-  String? _bio;
-  dynamic _location;
-  Links? _links;
-  ProfileImage? _profileImage;
-  String? _instagramUsername;
-  num? _totalCollections;
-  num? _totalLikes;
-  num? _totalPhotos;
-  num? _totalPromotedPhotos;
-  num? _totalIllustrations;
-  num? _totalPromotedIllustrations;
-  bool? _acceptedTos;
-  bool? _forHire;
-  Social? _social;
-User copyWith({  String? id,
-  String? updatedAt,
-  String? username,
-  String? name,
-  String? firstName,
-  String? lastName,
-  dynamic twitterUsername,
-  String? portfolioUrl,
-  String? bio,
-  dynamic location,
-  Links? links,
-  ProfileImage? profileImage,
-  String? instagramUsername,
-  num? totalCollections,
-  num? totalLikes,
-  num? totalPhotos,
-  num? totalPromotedPhotos,
-  num? totalIllustrations,
-  num? totalPromotedIllustrations,
-  bool? acceptedTos,
-  bool? forHire,
-  Social? social,
-}) => User(  id: id ?? _id,
-  updatedAt: updatedAt ?? _updatedAt,
-  username: username ?? _username,
-  name: name ?? _name,
-  firstName: firstName ?? _firstName,
-  lastName: lastName ?? _lastName,
-  twitterUsername: twitterUsername ?? _twitterUsername,
-  portfolioUrl: portfolioUrl ?? _portfolioUrl,
-  bio: bio ?? _bio,
-  location: location ?? _location,
-  links: links ?? _links,
-  profileImage: profileImage ?? _profileImage,
-  instagramUsername: instagramUsername ?? _instagramUsername,
-  totalCollections: totalCollections ?? _totalCollections,
-  totalLikes: totalLikes ?? _totalLikes,
-  totalPhotos: totalPhotos ?? _totalPhotos,
-  totalPromotedPhotos: totalPromotedPhotos ?? _totalPromotedPhotos,
-  totalIllustrations: totalIllustrations ?? _totalIllustrations,
-  totalPromotedIllustrations: totalPromotedIllustrations ?? _totalPromotedIllustrations,
-  acceptedTos: acceptedTos ?? _acceptedTos,
-  forHire: forHire ?? _forHire,
-  social: social ?? _social,
-);
-  String? get id => _id;
-  String? get updatedAt => _updatedAt;
-  String? get username => _username;
-  String? get name => _name;
-  String? get firstName => _firstName;
-  String? get lastName => _lastName;
-  dynamic get twitterUsername => _twitterUsername;
-  String? get portfolioUrl => _portfolioUrl;
-  String? get bio => _bio;
-  dynamic get location => _location;
-  Links? get links => _links;
-  ProfileImage? get profileImage => _profileImage;
-  String? get instagramUsername => _instagramUsername;
-  num? get totalCollections => _totalCollections;
-  num? get totalLikes => _totalLikes;
-  num? get totalPhotos => _totalPhotos;
-  num? get totalPromotedPhotos => _totalPromotedPhotos;
-  num? get totalIllustrations => _totalIllustrations;
-  num? get totalPromotedIllustrations => _totalPromotedIllustrations;
-  bool? get acceptedTos => _acceptedTos;
-  bool? get forHire => _forHire;
-  Social? get social => _social;
-
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['id'] = _id;
-    map['updated_at'] = _updatedAt;
-    map['username'] = _username;
-    map['name'] = _name;
-    map['first_name'] = _firstName;
-    map['last_name'] = _lastName;
-    map['twitter_username'] = _twitterUsername;
-    map['portfolio_url'] = _portfolioUrl;
-    map['bio'] = _bio;
-    map['location'] = _location;
-    if (_links != null) {
-      map['links'] = _links?.toJson();
-    }
-    if (_profileImage != null) {
-      map['profile_image'] = _profileImage?.toJson();
-    }
-    map['instagram_username'] = _instagramUsername;
-    map['total_collections'] = _totalCollections;
-    map['total_likes'] = _totalLikes;
-    map['total_photos'] = _totalPhotos;
-    map['total_promoted_photos'] = _totalPromotedPhotos;
-    map['total_illustrations'] = _totalIllustrations;
-    map['total_promoted_illustrations'] = _totalPromotedIllustrations;
-    map['accepted_tos'] = _acceptedTos;
-    map['for_hire'] = _forHire;
-    if (_social != null) {
-      map['social'] = _social?.toJson();
-    }
-    return map;
-  }
-
-}
 
 /// instagram_username : "estoric.wav"
 /// portfolio_url : "https://open.spotify.com/artist/6N4Dpg7qAykAxA95NaYKLX?si=qMTQdOPPSdGA_UMfPAGkBw"
@@ -737,94 +523,6 @@ Urls copyWith({  String? raw,
     map['small'] = _small;
     map['thumb'] = _thumb;
     map['small_s3'] = _smallS3;
-    return map;
-  }
-
-}
-
-/// en : "a-desert-landscape-features-rocks-trees-and-a-bench-Wm-SV83XnLM"
-/// es : "un-paisaje-desertico-cuenta-con-rocas-arboles-y-un-banco-Wm-SV83XnLM"
-/// ja : "砂漠の風景には岩木ベンチがあります-Wm-SV83XnLM"
-/// fr : "un-paysage-desertique-comprend-des-rochers-des-arbres-et-un-banc-Wm-SV83XnLM"
-/// it : "un-paesaggio-desertico-presenta-rocce-alberi-e-una-panchina-Wm-SV83XnLM"
-/// ko : "사막-풍경에는-바위-나무-벤치가-있습니다-Wm-SV83XnLM"
-/// de : "eine-wustenlandschaft-besteht-aus-felsen-baumen-und-einer-bank-Wm-SV83XnLM"
-/// pt : "uma-paisagem-desertica-apresenta-rochas-arvores-e-um-banco-Wm-SV83XnLM"
-
-class AlternativeSlugs {
-  AlternativeSlugs({
-      String? en, 
-      String? es, 
-      String? ja, 
-      String? fr, 
-      String? it, 
-      String? ko, 
-      String? de, 
-      String? pt,}){
-    _en = en;
-    _es = es;
-    _ja = ja;
-    _fr = fr;
-    _it = it;
-    _ko = ko;
-    _de = de;
-    _pt = pt;
-}
-
-  AlternativeSlugs.fromJson(dynamic json) {
-    _en = json['en'];
-    _es = json['es'];
-    _ja = json['ja'];
-    _fr = json['fr'];
-    _it = json['it'];
-    _ko = json['ko'];
-    _de = json['de'];
-    _pt = json['pt'];
-  }
-  String? _en;
-  String? _es;
-  String? _ja;
-  String? _fr;
-  String? _it;
-  String? _ko;
-  String? _de;
-  String? _pt;
-AlternativeSlugs copyWith({  String? en,
-  String? es,
-  String? ja,
-  String? fr,
-  String? it,
-  String? ko,
-  String? de,
-  String? pt,
-}) => AlternativeSlugs(  en: en ?? _en,
-  es: es ?? _es,
-  ja: ja ?? _ja,
-  fr: fr ?? _fr,
-  it: it ?? _it,
-  ko: ko ?? _ko,
-  de: de ?? _de,
-  pt: pt ?? _pt,
-);
-  String? get en => _en;
-  String? get es => _es;
-  String? get ja => _ja;
-  String? get fr => _fr;
-  String? get it => _it;
-  String? get ko => _ko;
-  String? get de => _de;
-  String? get pt => _pt;
-
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['en'] = _en;
-    map['es'] = _es;
-    map['ja'] = _ja;
-    map['fr'] = _fr;
-    map['it'] = _it;
-    map['ko'] = _ko;
-    map['de'] = _de;
-    map['pt'] = _pt;
     return map;
   }
 

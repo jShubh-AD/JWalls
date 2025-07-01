@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -8,10 +8,11 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 
-class SetWallpaper extends GetxController{
-  Future<void> setWall({required String imageUrl}) async{
+class SetWallpaper extends GetxController {
+
+  Future<void> setWall({required String imageUrl}) async {
     int location = WallpaperManagerFlutter.bothScreens;
-    var fileInfo =  await DefaultCacheManager().getFileFromCache(imageUrl);
+    var fileInfo = await DefaultCacheManager().getFileFromCache(imageUrl);
 
     if (fileInfo != null) {
       print("✅ wall was found in cache: ${fileInfo.file.path}");
@@ -19,18 +20,26 @@ class SetWallpaper extends GetxController{
       print("❌ wall not in cache, will be downloaded.");
     }
 
-    File file = await  DefaultCacheManager().getSingleFile(imageUrl);
+    File file = await DefaultCacheManager().getSingleFile(imageUrl);
     bool result = await WallpaperManagerFlutter().setWallpaper(file, location);
     if (result) {
-      Get.snackbar('Wall Applied', 'New wall is applied\nShow support to developer.');
+      Get.snackbar(
+        'Wall Applied',
+        'New wall is applied\nShow support to developer.',
+      );
     } else {
-      Get.snackbar('No New Wall', 'Could not apply new wall\nSome error occurred\nPlease retry');
+      Get.snackbar(
+        'No New Wall',
+        'Could not apply new wall\nSome error occurred\nPlease retry',
+      );
     }
   }
+
   Future<void> setEditedWall(GlobalKey boundaryKey) async {
     try {
       // 1️⃣ Grab the RenderRepaintBoundary
-      final boundary = boundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary = boundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary == null) {
         Get.snackbar('Error', 'Could not capture the edit.');
         return;
@@ -47,11 +56,17 @@ class SetWallpaper extends GetxController{
       await file.writeAsBytes(bytes);
 
       // 4️⃣ Set as wallpaper (both screens)
-      final ok = await WallpaperManagerFlutter().setWallpaper(file, WallpaperManagerFlutter.bothScreens);
+      final ok = await WallpaperManagerFlutter().setWallpaper(
+        file,
+        WallpaperManagerFlutter.bothScreens,
+      );
+      await file.delete();
 
       Get.snackbar(
         ok ? 'Wall Applied' : 'Failed',
-        ok ? 'Your personalised wall is applied!' : 'Couldn’t set wall, please try again.',
+        ok
+            ? 'Your personalised wall is applied!'
+            : 'Couldn’t set wall, please try again.',
       );
     } catch (e) {
       Get.snackbar('Error', 'Exception: $e');

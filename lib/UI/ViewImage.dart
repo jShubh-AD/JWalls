@@ -1,15 +1,17 @@
-import 'dart:typed_data';
+import 'dart:io';
 import 'dart:ui';
+import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 import 'package:walpy/Get_Controller/FeatchApi.dart';
 import 'package:walpy/Get_Controller/SetWallpaper.dart';
-import 'package:walpy/UI/portFolio.dart';
 import 'package:walpy/Widgets/FloatingButtons.dart';
 import 'package:walpy/features/fav/data/fav-model.dart';
 import 'package:walpy/features/fav/data/hive_service.dart';
@@ -33,12 +35,12 @@ class ViewImage extends StatefulWidget {
 
 class _ViewImageState extends State<ViewImage> {
   final FavService favo = FavService();
-  final userCtrl = Get.find<ApiCall>();
+ // final userCtrl = Get.find<ApiCall>();
 
   @override
   void initState() {
     super.initState();
-    userCtrl.loadUser(widget.id);
+   // userCtrl.loadUser(widget.id);
     final likeNow = favo.contains(widget.id);
     setState(() => isLike = likeNow);
   }
@@ -51,9 +53,6 @@ class _ViewImageState extends State<ViewImage> {
   @override
   Widget build(BuildContext context) {
     final SetWallpaper setWallpaper = Get.put(SetWallpaper());
-
-    final baseTag = widget.id;
-    final userData = userCtrl.user.value;
     print(widget.id);
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -65,6 +64,7 @@ class _ViewImageState extends State<ViewImage> {
               children: [
                 /// Set wall FAB:
                 FloatingActionButton(
+                  heroTag: null,
                   splashColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -73,13 +73,16 @@ class _ViewImageState extends State<ViewImage> {
                   onPressed: () {
                     (blurValue > 0)
                         ? setWallpaper.setEditedWall(_previewController)
-                        : setWallpaper.setWall(imageUrl: widget.imageUrl!);
+                        : (widget.imageUrl?.isNotEmpty ?? false)
+                        ? setWallpaper.setWall(imageUrl: widget.imageUrl!)
+                        : setFavWall(widget.imageBytes!);
                   },
                   child: Icon(Icons.done, color: Colors.black),
                 ).paddingOnly(bottom: 10),
 
                 /// Like FAB with setState logic to reBuild:
                 FloatingActionButton(
+                  heroTag:  null,
                   splashColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -110,7 +113,21 @@ class _ViewImageState extends State<ViewImage> {
                 ).paddingOnly(bottom: 10),
 
                 /// navigator to Author page with author image and User data FAB:
-                Obx(() {
+                ///
+                ///
+                FloatingActionButton(
+                  heroTag: null,
+                  splashColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  backgroundColor: Colors.white,
+                  onPressed: () {
+                    // Get.to(Portfolio(portfolio: userData));
+                  },
+                  child: Icon(Icons.person, color: Colors.black),
+                ).paddingOnly(bottom: 10),
+                /*  Obx(() {
                   final userData = userCtrl.user.value;
                   if (userData == null) {
                     return const Icon(Icons.person);
@@ -133,7 +150,7 @@ class _ViewImageState extends State<ViewImage> {
                             ),
                           ),
                   ).paddingOnly(bottom: 10);
-                }),
+                }),*/
 
                 ///  Speed dial FAB(edit,download,info):
                 FloatingButtons(
@@ -196,7 +213,8 @@ class _ViewImageState extends State<ViewImage> {
                   },
                   closePressed: () {
                     setState(() {
-                      blurValue = 0;
+                      blurValue = 0.0;
+                      print(blurValue);
                       isEdit = false;
                     });
                   },
@@ -204,6 +222,7 @@ class _ViewImageState extends State<ViewImage> {
                   onChanged: (val) {
                     setState(() {
                       blurValue = val;
+                      print(blurValue);
                     });
                   },
                 ),
@@ -290,6 +309,27 @@ class _ViewImageState extends State<ViewImage> {
       }
     } catch (e) {
       Get.snackbar('Error', 'Something went wrong: $e');
+    }
+  }
+
+  Future<void> setFavWall(Uint8List bytes) async {
+    try {
+      final location = WallpaperManagerFlutter.bothScreens;
+      final dir = await getTemporaryDirectory();
+      final file = File(
+        "${dir.path}/JWalls_fav_${DateTime.now().microsecondsSinceEpoch}.png",
+      );
+      file.writeAsBytes(bytes);
+      final ok = await WallpaperManagerFlutter().setWallpaper(file, location);
+      await file.delete();
+      Get.snackbar(
+        ok ? 'Wall Applied' : 'Failed',
+        ok
+            ? 'Your favorite wall is applied!'
+            : 'Couldn’t set wall, please try again.',
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Exception: $e');
     }
   }
 }

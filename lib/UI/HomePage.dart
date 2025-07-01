@@ -41,7 +41,7 @@ class _HomepageState extends State<Homepage>
       return MasonryGridView.count(
         controller: fetchWalls.scrollController,
         itemCount:
-            fetchWalls.photos.length,
+            fetchWalls.photos.length - 1,
         // extra for loader
         crossAxisCount: 2,
         mainAxisSpacing: 5,
@@ -49,7 +49,7 @@ class _HomepageState extends State<Homepage>
 
         itemBuilder: (context, index) {
           final wallpaper = fetchWalls.photos[index];
-          final url = wallpaper.urls!.small!;
+          final url = wallpaper.urls!.smallS3!;
           double ht = index.isEven ? 200 : 250;
           return Stack(
             children: [

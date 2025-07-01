@@ -78,11 +78,11 @@ class _SearchPageState extends State<SearchPage> {
                             borderRadius: SearchPage.borderRadius24,
                             child: GestureDetector(
                               onTap:  (){
-                               /* Get.to( () => ViewImage(
+                                Get.to( () => ViewImage(
                                   imageUrl: urls.full!,
                                   id: searchWalls.id!,
-                                  blurHash:  searchWalls.blurHash! ,)
-                                );*/
+                                  //blurHash:  searchWalls.blurHash! ,)
+                                ));
                               },
                               child: Hero(
                                 tag: searchWalls.id!,

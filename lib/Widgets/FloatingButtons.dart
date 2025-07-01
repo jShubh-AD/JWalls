@@ -22,9 +22,9 @@ class FloatingButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SpeedDial(
+      heroTag: null,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       elevation: 0,
-      heroTag: null,
       spacing: 4,
       overlayOpacity: .3,
       childrenButtonSize: Size(55, 66),

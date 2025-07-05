@@ -9,7 +9,8 @@ import 'package:http/http.dart'as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:walpy/core/http_const/api_const.dart';
 import 'package:walpy/data/DataSource/user_datasource.dart';
-import '../data/Models/walls_model.dart';
+import 'package:walpy/data/Models/UserModel.dart';
+import '../data/Models/Wallpapers.dart';
 
 
 class ApiCall extends GetxController {
@@ -19,7 +20,7 @@ class ApiCall extends GetxController {
   final _repo = User_Datasource();
 
   Rx<bool> isUserLoading = false.obs;
-  final user = Rxn<User>();
+  final user = Rxn<UserModel>();
 
   Rx<bool> isLoading = true.obs;
   Rx<bool> isOnline = false.obs;
@@ -66,7 +67,7 @@ class ApiCall extends GetxController {
     super.onClose();
   }
 
-  Future<User?> loadUser (String id) async{
+  Future<UserModel?> loadUser (String id) async{
     isUserLoading.value = true;
     user.value = await _repo.fetchUser(id);
     isUserLoading.value = false;
@@ -76,7 +77,8 @@ class ApiCall extends GetxController {
 
 
   void searchApi({required String search})async{
-    String searchUrl= 'https://api.unsplash.com/search/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=20&page=$searchPageNum&query=$search';
+    print('search api called for $search and page $searchPageNum');
+    String searchUrl= 'https://api.unsplash.com/search/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=19&page=$searchPageNum&query=$search';
     try{
       if (searchPageNum == 1) {
         isSearchLoading.value = true;
@@ -135,7 +137,7 @@ class ApiCall extends GetxController {
 
   void setUpScrollListener(){
    scrollController.addListener((){
-    if(scrollController.position.pixels >= scrollController.position.maxScrollExtent - 700 && !isPagination.value && !isLoading.value){
+    if(scrollController.position.pixels >= scrollController.position.maxScrollExtent - 300 && !isPagination.value && !isLoading.value){
       isPagination.value = true;
       isLoading.value = true;
         homPageNum++;
@@ -146,7 +148,7 @@ class ApiCall extends GetxController {
 
   void setUpSearchScrollListener(){
     searchScrollController.addListener((){
-      if(searchScrollController.position.pixels >= searchScrollController.position.maxScrollExtent - 700 && !isPagination.value && !isSearchLoading.value){
+      if(searchScrollController.position.pixels >= searchScrollController.position.maxScrollExtent - 300 && !isPagination.value && !isSearchLoading.value){
         isPagination.value = true;
         isSearchLoading.value = true;
         searchPageNum++;
@@ -156,6 +158,7 @@ class ApiCall extends GetxController {
   }
 
   Future<void> fetchApi() async {
+    print('fetch api called page $homPageNum');
     String url = '${ApiConst.fetchImageId.baseUrl()}/${ApiConst.key}&per_page=20&page=$homPageNum';
     try {
       if (homPageNum == 1) {isLoading.value = true;}

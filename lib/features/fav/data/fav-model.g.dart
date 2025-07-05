@@ -19,17 +19,20 @@ class FavModelAdapter extends TypeAdapter<FavModel> {
     return FavModel(
       id: fields[0] as String,
       bytes: fields[1] as Uint8List,
+      avtar: fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, FavModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.bytes);
+      ..write(obj.bytes)
+      ..writeByte(2)
+      ..write(obj.avtar);
   }
 
   @override

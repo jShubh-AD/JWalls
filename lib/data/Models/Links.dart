@@ -3,12 +3,9 @@ import 'dart:convert';
 Links linksFromJson(String str) => Links.fromJson(json.decode(str));
 String linksToJson(Links data) => json.encode(data.toJson());
 class Links {
-  Links({
-      this.html,});
+  Links({this.html,});
 
-  Links.fromJson(dynamic json) {
-    html = json['html'];
-  }
+  Links.fromJson(dynamic json) {html = json['html'];}
   String? html;
 
   Map<String, dynamic> toJson() {
@@ -16,5 +13,4 @@ class Links {
     map['html'] = html;
     return map;
   }
-
 }

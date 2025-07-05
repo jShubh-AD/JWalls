@@ -9,7 +9,10 @@ class FavModel extends HiveObject {
   final String id;           // wallpaper ID
 
   @HiveField(1)
-  final Uint8List bytes;     // full‑res image bytes
+  final Uint8List bytes;// full‑res image bytes
 
-  FavModel({required this.id, required this.bytes});
+  @HiveField(2)
+  final String avtar;
+
+  FavModel({required this.id, required this.bytes,required this.avtar});
 }

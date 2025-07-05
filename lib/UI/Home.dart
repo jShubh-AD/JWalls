@@ -25,56 +25,124 @@ class _HomeState extends State<Home> {
     final height = MediaQuery.of(context).size.height;
     final darkMode = isDarkMode(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        surfaceTintColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
-        leading: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Image.asset('assets/images/JWalls_appBar_big.png'),
-        ).paddingOnly(left: 10, bottom: 5),
-        title: Text(
-          'JWalls',
-          style: TextStyle(color: darkMode?Colors.white:Colors.black,fontWeight: FontWeight.w600, fontSize: 24),
-        ),
-      ),
-      body: Obx(() => Stack(
-        children: List.generate(naviController.pages.length, (index) {
-          return Offstage(
-            offstage: naviController.selectedIndex.value != index,
-            child: Navigator(
-              key: naviController.navigatorKeys[index],
-              onGenerateRoute: (_) => MaterialPageRoute(
-                builder: (_) => naviController.pages[index],
-              ),
-            ),
-          );
-        }),
-      )),
-      bottomNavigationBar: Obx(
-            () => NavigationBar(
-          elevation: 0,
-          height: height * 0.09,
-          selectedIndex: naviController.selectedIndex.value,
-          onDestinationSelected: (index) =>
-          naviController.selectedIndex.value = index,
-          backgroundColor: darkMode ? Colors.black : Colors.white,
-          indicatorColor: darkMode
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.1),
+    return WillPopScope(
+      onWillPop: () async {
+        // The navigator inside the currently‑selected tab
+        final navState = naviController
+            .navigatorKeys[naviController.selectedIndex.value]
+            .currentState;
+
+        // 1️⃣ Pop inside the tab if we’re deeper than its root
+        /* if (navState != null && navState.canPop()) {
+          navState.maybePop();
+          return false; // we handled it
+        }*/
+
+        // 2️⃣ Otherwise, jump back to Home tab
+        if (naviController.selectedIndex.value != 0) {
+          naviController.selectedIndex.value = 0;
+          return false; // don’t exit the app
+        }
+
+        // 3️⃣ We’re already on Home/root → allow the app to close
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
           surfaceTintColor: Colors.transparent,
-          destinations: [
-            NavigationDestination(
-                icon: Icon(Icons.home,color: darkMode?Colors.white:Colors.black), label: 'Home'),
-            NavigationDestination(
-                icon: Icon(Icons.search,color: darkMode?Colors.white:Colors.black), label: 'Search'),
-            NavigationDestination(
-                icon: Icon(Icons.favorite,color: darkMode?Colors.white:Colors.black), label: 'Fav'),
-            NavigationDestination(
-                icon: Icon(Icons.settings,color: darkMode?Colors.white:Colors.black), label: 'Settings'),
-          ],
+          backgroundColor: Colors.transparent,
+          leading: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
+            child: Image.asset('assets/images/JWalls_appBar_big.png'),
+          ).paddingOnly(left: 10, bottom: 5),
+          title: Text(
+            'JWalls',
+            style: TextStyle(
+              color: darkMode ? Colors.white : Colors.black,
+              fontWeight: FontWeight.w600,
+              fontSize: 24,
+            ),
+          ),
+        ),
+        body: Obx(
+          () => Stack(
+            children: List.generate(naviController.pages.length, (index) {
+              return Offstage(
+                offstage: naviController.selectedIndex.value != index,
+                child: Navigator(
+                  key: naviController.navigatorKeys[index],
+                  onGenerateRoute: (_) => MaterialPageRoute(
+                    builder: (_) => naviController.pages[index],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        bottomNavigationBar: Obx(
+          () => NavigationBar(
+            elevation: 0,
+            height: height * 0.08,
+            selectedIndex: naviController.selectedIndex.value,
+            onDestinationSelected: (index) =>
+                naviController.selectedIndex.value = index,
+            backgroundColor: darkMode ? Colors.black : Colors.white,
+            //labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+            indicatorColor: darkMode
+                ? Colors.transparent
+                : Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            destinations: [
+              NavigationDestination(
+                tooltip: "Home Page",
+                selectedIcon: Icon(
+                  Icons.home,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                icon: Icon(
+                  Icons.home_outlined,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                tooltip: "Search area",
+                selectedIcon: Icon(
+                  Icons.search,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                icon: Icon(
+                  Icons.search_outlined,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                label: 'Search',
+              ),
+              NavigationDestination(
+                tooltip: "Favourite zone",
+                selectedIcon: Icon(
+                  Icons.favorite,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                icon: Icon(
+                  Icons.favorite_outline,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                label: 'Fav',
+              ),
+              NavigationDestination(
+                tooltip: "Settings",
+                selectedIcon: Icon(
+                  Icons.settings,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                icon: Icon(
+                  Icons.settings_outlined,
+                  color: darkMode ? Colors.white : Colors.black,
+                ),
+                label: 'Settings',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -86,12 +154,12 @@ class NaviController extends GetxController {
 
   final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
     4,
-        (index) => GlobalKey<NavigatorState>(),
+    (index) => GlobalKey<NavigatorState>(),
   );
 
   final List<Widget> pages = [
     const Homepage(),
-    SearchPage(),
+    const SearchPage(),
     const FavPage(),
     const Settings(),
   ];

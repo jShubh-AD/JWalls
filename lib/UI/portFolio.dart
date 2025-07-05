@@ -131,7 +131,7 @@ class Portfolio extends StatelessWidget {
                             decoration: BoxDecoration(
                                 color: Colors.grey,
                                 borderRadius: Homepage.borderRadius24),
-                            child: Center(child: CircularProgressIndicator()))
+                            child: Center(child: CircularProgressIndicator(color: Colors.black,)))
                             : SizedBox.shrink();
                       }*/
                      // final wallpaper = fetchWalls.photos[index];

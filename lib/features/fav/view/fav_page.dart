@@ -41,6 +41,7 @@ class _FavPageState extends State<FavPage> {
                 InkWell(
                   onTap: (){
                     Get.to(ViewImage(
+                      avtar: fav.avtar,
                         imageBytes: fav.bytes,
                         id: fav.id));
                   },
@@ -61,10 +62,8 @@ class _FavPageState extends State<FavPage> {
                   bottom: 10,
                   right: 10,
                   child: InkWell(
-                    onTap: () {
-                      setState(() {
+                    onTap: () async{
                         favService.remove(fav.id);
-                      });
                     },
                     child: Icon(Icons.favorite, color: Colors.red, size: 26),
                   ),

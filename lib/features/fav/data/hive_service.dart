@@ -46,7 +46,10 @@ class FavService {
 
   /* ---------- helpers ---------- */
 
+  ValueListenable<Box<FavModel>> listenableFor(String FavId) => _box.listenable(keys: [FavId]);
+
   ValueListenable<Box<FavModel>> get listenable => _box.listenable();
+
 
   int? _findKeyById(String wallId) {
     // return the Hive key (int) for this wallpaper id, or null
@@ -59,20 +62,24 @@ class FavService {
 
   /* ---------- public API ---------- */
 
-  bool contains(String wallId) {
+  /*bool contains(String wallId) {
     return _box.values.any((fav) => fav.id == wallId);
   }
+*/
 
-  Future<void> add(FavModel fav) async => _box.add(fav);
+  bool contains(String wallId) => _box.containsKey(wallId);
+  Future<void> add(FavModel fav) async => _box.put(fav.id, fav);
+  Future<void> remove(String wallId) async => _box.delete(wallId);
+  FavModel? get(String wallId) => _box.get(wallId);
 
-  Future<void> remove(String wallId) async {
+ /* Future<void> remove(String wallId) async {
     final key = _findKeyById(wallId);
     if (key != null) await _box.delete(key);
     print("fav deleted: $wallId");
-  }
+  }*/
 
   /// Flip state & return NEW value (true = now liked)
-  Future<bool> toggle(FavModel fav) async {
+  /*Future<bool> toggle(FavModel fav) async {
     if (contains(fav.id)) {
       await remove(fav.id);
       print('Removed ${fav.id}');
@@ -82,6 +89,17 @@ class FavService {
       print('Added  ${fav.id}');
       return true;
     }
+  }*/
+
+  Future<bool> toggle(FavModel fav) async {
+    if (_box.containsKey(fav.id)) {
+      await _box.delete(fav.id);
+      return false;
+    } else {
+      await _box.put(fav.id, fav);
+      return true;
+    }
   }
+
 }
 

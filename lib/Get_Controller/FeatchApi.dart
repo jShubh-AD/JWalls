@@ -7,20 +7,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart'as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:walpy/UI/gallery_page.dart';
 import 'package:walpy/core/http_const/api_const.dart';
 import 'package:walpy/data/DataSource/user_datasource.dart';
 import 'package:walpy/data/Models/UserModel.dart';
+import '../UI/HomePage.dart';
+import '../UI/SearchPage.dart';
+import '../UI/Settings.dart';
 import '../data/Models/Wallpapers.dart';
+import '../features/fav/view/fav_page.dart';
 
 
 class ApiCall extends GetxController {
   final RxList<Wallpapers> photos = <Wallpapers>[].obs;
   final RxList<Wallpapers> searchPhotos = <Wallpapers>[].obs;
-
-  final _repo = User_Datasource();
-
-  Rx<bool> isUserLoading = false.obs;
-  final user = Rxn<UserModel>();
 
   Rx<bool> isLoading = true.obs;
   Rx<bool> isOnline = false.obs;
@@ -33,8 +33,16 @@ class ApiCall extends GetxController {
 
   StreamSubscription? _isOnInternet;
   final TextEditingController searchController = TextEditingController();
-  final ScrollController scrollController = ScrollController();
-  final ScrollController searchScrollController =ScrollController();
+  RxInt selectedIndex = 0.obs;
+
+  final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(4, (index) => GlobalKey<NavigatorState>(),);
+
+  final List<Widget> pages = [
+    const Homepage(),
+    const GalleryPage(),
+    const FavPage(),
+    const Settings(),
+  ];
 
 
   @override
@@ -54,12 +62,7 @@ class ApiCall extends GetxController {
     });
   }
 
-  @override
-  void onReady(){
-    super.onReady();
-    setUpScrollListener();
-    setUpSearchScrollListener();
-  }
+
   @override
   void onClose(){
     _isOnInternet!.cancel();
@@ -67,18 +70,9 @@ class ApiCall extends GetxController {
     super.onClose();
   }
 
-  Future<UserModel?> loadUser (String id) async{
-    isUserLoading.value = true;
-    user.value = await _repo.fetchUser(id);
-    isUserLoading.value = false;
-    return user.value;
-  }
-
-
-
   void searchApi({required String search})async{
     print('search api called for $search and page $searchPageNum');
-    String searchUrl= 'https://api.unsplash.com/search/photos/?client_id=uJNokym2lnVuaxCww00FP1DgOoOfXXz4-UnaRnaYsFI&per_page=19&page=$searchPageNum&query=$search';
+    String searchUrl= '${ApiConst.searchWall.baseUrl()}${ApiConst.key}&per_page=19&page=$searchPageNum&query=$search';
     try{
       if (searchPageNum == 1) {
         isSearchLoading.value = true;
@@ -135,31 +129,10 @@ class ApiCall extends GetxController {
     }
   }
 
-  void setUpScrollListener(){
-   scrollController.addListener((){
-    if(scrollController.position.pixels >= scrollController.position.maxScrollExtent - 300 && !isPagination.value && !isLoading.value){
-      isPagination.value = true;
-      isLoading.value = true;
-        homPageNum++;
-        fetchApi();
-    }
-    });
-  }
-
-  void setUpSearchScrollListener(){
-    searchScrollController.addListener((){
-      if(searchScrollController.position.pixels >= searchScrollController.position.maxScrollExtent - 300 && !isPagination.value && !isSearchLoading.value){
-        isPagination.value = true;
-        isSearchLoading.value = true;
-        searchPageNum++;
-       searchApi(search: searchController.text);
-      }
-    });
-  }
-
   Future<void> fetchApi() async {
     print('fetch api called page $homPageNum');
-    String url = '${ApiConst.fetchImageId.baseUrl()}/${ApiConst.key}&per_page=20&page=$homPageNum';
+    String url = '${ApiConst.fetchImageId.baseUrl()}${ApiConst.key}&per_page=20&page=$homPageNum';
+    print(url);
     try {
       if (homPageNum == 1) {isLoading.value = true;}
       final response = await http.get(Uri.parse(url));

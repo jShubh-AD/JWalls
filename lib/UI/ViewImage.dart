@@ -1,7 +1,8 @@
 import 'dart:io';
-import 'dart:ui';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -12,17 +13,21 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+import 'package:walpy/UI/portFolio.dart';
 import 'package:walpy/Widgets/FloatingButtons.dart';
 import 'package:walpy/features/fav/data/fav-model.dart';
 import 'package:walpy/features/fav/data/hive_service.dart';
+
 import '../Widgets/SliderWidget.dart';
 
 class ViewImage extends StatefulWidget {
   const ViewImage({
     super.key,
+    this.userName,
     this.smallUrl,
     this.imageUrl,
     this.imageBytes,
+    this.name,
     this.avtar,
     required this.id,
   });
@@ -32,6 +37,8 @@ class ViewImage extends StatefulWidget {
   final String? smallUrl;
   final String id;
   final String? avtar;
+  final String? userName;
+  final String? name;
 
   @override
   State<ViewImage> createState() => _ViewImageState();
@@ -45,25 +52,41 @@ class _ViewImageState extends State<ViewImage> {
     super.initState();
     final likeNow = favo.contains(widget.id);
     setState(() => isLike = likeNow);
+
+    // Use low-quality image initially
+    // currentImageProvider = CachedNetworkImageProvider(widget.smallUrl!); // Replace with your small URL
+
+    // Preload full-quality and update when ready
+    ImageProvider fullImage;
+    if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
+      fullImage = CachedNetworkImageProvider(widget.imageUrl!);
+    } else {
+      fullImage = MemoryImage(widget.imageBytes!);
+    }
+    fullImage
+        .resolve(const ImageConfiguration())
+        .addListener(
+          ImageStreamListener((_, __) {
+            if (mounted) {
+              setState(() {
+                currentImageProvider = fullImage;
+              });
+            }
+          }),
+        );
   }
 
   final GlobalKey _previewController = GlobalKey();
+  late ImageProvider currentImageProvider = CachedNetworkImageProvider(
+    widget.smallUrl!,
+  );
   bool isEdit = false;
   double blurValue = 0;
   bool isLike = false;
+  bool _isSettingWall = false;
 
   @override
   Widget build(BuildContext context) {
-    ImageProvider imageProvider;
-    if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
-      imageProvider = CachedNetworkImageProvider(
-          widget.imageUrl!,
-       // maxWidth : (Get.width * 2).ceil(),
-       // maxHeight: (Get.height *).ceil(),
-      );
-    } else {
-      imageProvider = MemoryImage(widget.imageBytes!);
-    }
     print(widget.id);
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -73,7 +96,7 @@ class _ViewImageState extends State<ViewImage> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                /// Set wall FAB:
+                ///  Set wall FAB:
                 FloatingActionButton(
                   heroTag: null,
                   splashColor: Colors.transparent,
@@ -81,14 +104,47 @@ class _ViewImageState extends State<ViewImage> {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   backgroundColor: Colors.white,
-                  onPressed: () {
-                    (blurValue > 0)
-                        ? setEditedWall(_previewController)
-                        : (widget.imageUrl?.isNotEmpty ?? false)
-                        ? setWall(imageUrl: widget.imageUrl!)
-                        : setFavWall(widget.imageBytes!);
-                  },
-                  child: Icon(Icons.done, color: Colors.black),
+                  onPressed: _isSettingWall
+                      ? null // disable while busy
+                      : () async {
+                          setState(() => _isSettingWall = true);
+
+                          //await Future.delayed(const Duration(seconds: 2));
+
+                          try {
+                            if (blurValue > 0 || widget.imageUrl!.isNotEmpty) {
+                              await setEditedWall(_previewController);
+                            } else {
+                              await setFavWall(widget.imageBytes!);
+                            }
+                            Get.snackbar(
+                              'Wall Applied!',
+                              'Enjoy your new wall.',
+                            );
+                          } catch (e) {
+                            Get.snackbar('Could not apply wall', 'Error: $e');
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isSettingWall = false);
+                            }
+                          }
+                        },
+                  child: _isSettingWall
+                      ? const SizedBox(
+                          key: ValueKey('loader'),
+                          height: 32,
+                          width: 32,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3.5,
+                            color: Colors.black,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.done,
+                          key: ValueKey('done'),
+                          size: 24,
+                          color: Colors.black,
+                        ),
                 ).paddingOnly(bottom: 10),
 
                 /// Like FAB with setState logic to reBuild:
@@ -139,7 +195,8 @@ class _ViewImageState extends State<ViewImage> {
                   ),
                   backgroundColor: Colors.white,
                   onPressed: () {
-                    // Get.to(Portfolio(portfolio: userData));
+                    print(widget.userName);
+                    Get.to(() => Portfolio(userName: widget.userName!));
                   },
                   child: CircleAvatar(
                     radius: 22,
@@ -180,16 +237,18 @@ class _ViewImageState extends State<ViewImage> {
           children: [
             PhotoView(
               filterQuality: FilterQuality.low,
-              imageProvider: imageProvider,
+              imageProvider: currentImageProvider,
               minScale: PhotoViewComputedScale.covered,
               maxScale: PhotoViewComputedScale.covered,
               enableRotation: false,
               initialScale: PhotoViewComputedScale.covered,
               strictScale: true,
               loadingBuilder: (context, event) {
-                return CachedNetworkImage(
-                  imageUrl: widget.smallUrl!,
-                  fit: BoxFit.cover,
+                return Container(
+                  color: Colors.grey.shade200,
+                  child: Center(
+                    child: CircularProgressIndicator(color: Colors.black),
+                  ),
                 );
               },
             ),
@@ -229,6 +288,24 @@ class _ViewImageState extends State<ViewImage> {
                   },
                 ),
               ),
+            /*Positioned(
+              bottom: 100,
+              right: 80,
+              child: Container(
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.3),
+                  borderRadius: Homepage.borderRadius24,
+                ),
+                child: Text(
+                  '${widget.name}\nOn Unsplash',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),*/
           ],
         ),
       ),
@@ -317,157 +394,47 @@ class _ViewImageState extends State<ViewImage> {
 
   /// -------------------------------------------------SET WALLS -------------------------------------------------------------------
 
-  /// ================= SET WALLPAPER ==============
-
-  Future<void> setWall({required String imageUrl}) async {
-    int location = WallpaperManagerFlutter.bothScreens;
-    var fileInfo = await DefaultCacheManager().getFileFromCache(imageUrl);
-
-    if (fileInfo != null) {
-      print("✅ wall was found in cache: ${fileInfo.file.path}");
-    } else {
-      print("❌ wall not in cache, will be downloaded.");
-    }
-
-    File file = await DefaultCacheManager().getSingleFile(imageUrl);
-    bool result = await WallpaperManagerFlutter().setWallpaper(file, location);
-    if (result) {
-      Get.snackbar(
-        'Wall Applied',
-        'New wall is applied\nShow support to developer.',
-      );
-    } else {
-      Get.snackbar(
-        'No New Wall',
-        'Could not apply new wall\nSome error occurred\nPlease retry',
-      );
-    }
-  }
-
   /// ================= SET PERSONALISED WALLPAPER ==============
 
   Future<void> setEditedWall(GlobalKey boundaryKey) async {
-    try {
-      // 1️⃣ Grab the RenderRepaintBoundary
-      final boundary =
-          boundaryKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary == null) {
-        Get.snackbar('Error', 'Could not capture the edit.');
-        return;
-      }
-      // 2️⃣ Capture an image at high resolution (adjust ratio if needed)
-      final ui.Image uiImage = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
-      final bytes = byteData!.buffer.asUint8List();
-
-      // 3️⃣ Save PNG to a temp file
-      final tempDir = await getTemporaryDirectory();
-      final filePath =
-          '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.png';
-      final file = File(filePath);
-      await file.writeAsBytes(bytes);
-
-      // 4️⃣ Set as wallpaper (both screens)
-      final ok = await WallpaperManagerFlutter().setWallpaper(
-        file,
-        WallpaperManagerFlutter.bothScreens,
-      );
-      await file.delete();
-
-      Get.snackbar(
-        ok ? 'Wall Applied' : 'Failed',
-        ok
-            ? 'Your personalised wall is applied!'
-            : 'Couldn’t set wall, please try again.',
-      );
-    } catch (e) {
-      Get.snackbar('Error', 'Exception: $e');
+    // 1️⃣ Grab the RenderRepaintBoundary
+    final boundary =
+        boundaryKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
+    if (boundary == null) {
+      Get.snackbar('Error', 'Could not capture the edit.');
+      return;
     }
+    // 2️⃣ Capture an image at high resolution (adjust ratio if needed)
+    final ui.Image uiImage = await boundary.toImage(pixelRatio: 3.0);
+    final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = byteData!.buffer.asUint8List();
+
+    // 3️⃣ Save PNG to a temp file
+    final tempDir = await getTemporaryDirectory();
+    final filePath =
+        '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.png';
+    final file = File(filePath);
+    await file.writeAsBytes(bytes);
+
+    // 4️⃣ Set as wallpaper (both screens)
+    final ok = await WallpaperManagerFlutter().setWallpaper(
+      file,
+      WallpaperManagerFlutter.bothScreens,
+    );
+    await file.delete();
   }
 
   /// ================= SET FAV WALLPAPER ==============
 
   Future<void> setFavWall(Uint8List bytes) async {
-    try {
-      final location = WallpaperManagerFlutter.bothScreens;
-      final dir = await getTemporaryDirectory();
-      final file = File(
-        "${dir.path}/JWalls_fav_${DateTime.now().microsecondsSinceEpoch}.png",
-      );
-      file.writeAsBytes(bytes);
-      final ok = await WallpaperManagerFlutter().setWallpaper(file, location);
-      await file.delete();
-      Get.snackbar(
-        ok ? 'Wall Applied' : 'Failed',
-        ok
-            ? 'Your favorite wall is applied!'
-            : 'Couldn’t set wall, please try again.',
-      );
-    } catch (e) {
-      Get.snackbar('Error', 'Exception: $e');
-    }
+    final location = WallpaperManagerFlutter.bothScreens;
+    final dir = await getTemporaryDirectory();
+    final file = File(
+      "${dir.path}/JWalls_fav_${DateTime.now().microsecondsSinceEpoch}.png",
+    );
+    file.writeAsBytes(bytes);
+    await WallpaperManagerFlutter().setWallpaper(file, location);
+    await file.delete();
   }
 }
-
-/*if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: widget.imageUrl!,
-                fadeInDuration: const Duration(milliseconds: 0),
-                fadeOutDuration: Duration.zero,
-                placeholder: (context, url) {
-                  return (widget.smallUrl?.isNotEmpty ?? false )
-                    ? CachedNetworkImage(imageUrl: widget.smallUrl!)
-                      : Container(color: Colors.transparent);
-                },
-                errorWidget: (build, url, error) => Container(
-                  color: Colors.grey.shade300,
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.wifi_off, color: Colors.black45),
-                      const SizedBox(height: 4),
-                      Text(
-                        'No connection',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: Colors.black45),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Image.memory(widget.imageBytes!,),*/
-
-/* (widget.imageUrl != null && widget.imageUrl!.isNotEmpty)
-                  ? CachedNetworkImage(
-                      imageUrl: widget.imageUrl!,
-                      fadeInDuration: Duration.zero,
-                      fadeOutDuration: Duration.zero,
-                      placeholder: (context, url) {
-                        return (widget.smallUrl?.isNotEmpty ?? false)
-                            ? CachedNetworkImage(imageUrl: widget.smallUrl!)
-                            : Container(color: Colors.transparent);
-                      },
-                      errorWidget: (build, url, error) => Container(
-                        color: Colors.grey.shade300,
-                        alignment: Alignment.center,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.wifi_off, color: Colors.black45),
-                            const SizedBox(height: 4),
-                            Text(
-                              'No connection',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.black45),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : Image.memory(widget.imageBytes!),*/

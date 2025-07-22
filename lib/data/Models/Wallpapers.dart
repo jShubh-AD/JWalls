@@ -30,6 +30,8 @@ class Wallpapers {
       String? blurHash,
       Urls? urls,
       ProfileImage? avatar,
+    String? userName,
+    String? name,
 
   }){
     _id = id;
@@ -39,6 +41,8 @@ class Wallpapers {
     _blurHash = blurHash;
     _urls = urls;
     _avatar   = avatar;
+    _userName = userName;
+    _name = name;
   }
 
   Wallpapers.fromJson(dynamic json) {
@@ -51,6 +55,8 @@ class Wallpapers {
     _avatar = (json['user']?['profile_image'] != null)
         ? ProfileImage.fromJson(json['user']['profile_image'])
         : null;
+    _userName = json['user']?['username'];// ← pull username
+    _name = json['user']?['name'];
   }
   String? _id;
   num? _width;
@@ -59,6 +65,8 @@ class Wallpapers {
   String? _blurHash;
   Urls? _urls;
   ProfileImage?  _avatar;
+  String? _userName;
+  String? _name;
 
   String? get id => _id;
   num? get width => _width;
@@ -67,6 +75,8 @@ class Wallpapers {
   String? get blurHash => _blurHash;
   Urls? get urls => _urls;
   ProfileImage?  get avatar   => _avatar;
+  String? get userName  => _userName;
+  String? get name => _name;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -79,6 +89,8 @@ class Wallpapers {
       map['urls'] = _urls?.toJson();
     }
     if (_avatar != null) map['profile_image'] = _avatar!.toJson();
+    if (_userName != null) map['username']    = _userName;
+    if(_name != null) map['name'] = _name;
     return map;
   }
 
@@ -124,13 +136,6 @@ ProfileImage copyWith({  String? small,
 
 }
 
-
-/// raw : "https://images.unsplash.com/photo-1745905506747-ec17f2283d43?ixid=M3w3NTgxODd8MHwxfGFsbHwxfHx8fHx8fHwxNzQ5MDM2MDM0fA&ixlib=rb-4.1.0"
-/// full : "https://images.unsplash.com/photo-1745905506747-ec17f2283d43?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTgxODd8MHwxfGFsbHwxfHx8fHx8fHwxNzQ5MDM2MDM0fA&ixlib=rb-4.1.0&q=85"
-/// regular : "https://images.unsplash.com/photo-1745905506747-ec17f2283d43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NTgxODd8MHwxfGFsbHwxfHx8fHx8fHwxNzQ5MDM2MDM0fA&ixlib=rb-4.1.0&q=80&w=1080"
-/// small : "https://images.unsplash.com/photo-1745905506747-ec17f2283d43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NTgxODd8MHwxfGFsbHwxfHx8fHx8fHwxNzQ5MDM2MDM0fA&ixlib=rb-4.1.0&q=80&w=400"
-/// thumb : "https://images.unsplash.com/photo-1745905506747-ec17f2283d43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NTgxODd8MHwxfGFsbHwxfHx8fHx8fHwxNzQ5MDM2MDM0fA&ixlib=rb-4.1.0&q=80&w=200"
-/// small_s3 : "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1745905506747-ec17f2283d43"
 
 class Urls {
   Urls({

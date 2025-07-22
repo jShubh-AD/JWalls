@@ -12,7 +12,7 @@ class User_Datasource {
   /// Fetches a user profile from Unsplash and maps it to `UserModel`.
   Future<UserModel?> fetchUser(String id) async {
 
-    final uri = Uri.parse('${ApiConst.fetchImageId.baseUrl()}/$id/${ApiConst.key}');
+    final uri = Uri.parse('${ApiConst.fetchUser.baseUrl()}$id/${ApiConst.key}');
 
     try{
       final res = await http.get(uri);
@@ -50,6 +50,7 @@ class User_Datasource {
   }
   static Future<UserModel> heavyTask(String responseBody) async{
     Map<String,dynamic> data = jsonDecode(responseBody);
-      return UserModel.fromJson(data["user"]);
+      return UserModel.fromJson(data);
   }
 }
+// ${ApiConst.fetchUser.baseUrl()}/$id/${ApiConst.key}

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:walpy/UI/HomePage.dart';
+import 'package:walpy/Get_Controller/FeatchApi.dart';
 import 'package:walpy/UI/SearchPage.dart';
-import 'package:walpy/UI/Settings.dart';
 
-import '../features/fav/view/fav_page.dart';
+import '../core/navigation.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,7 +13,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final NaviController naviController = Get.put(NaviController());
+  // final NaviController naviController = Get.put(NaviController());
+  final ApiCall naviController = Get.find<ApiCall>();
 
   bool isDarkMode(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark;
@@ -48,10 +48,24 @@ class _HomeState extends State<Home> {
         return true;
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           surfaceTintColor: Colors.transparent,
           backgroundColor: Colors.transparent,
+          toolbarHeight: 46,
+          actions: [
+            GestureDetector(
+              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (c)=> SearchPage()));},
+              child: Icon(
+                Icons.search,
+                color: darkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            SizedBox(width: 10,)
+          ],
           leading: Container(
+            height: Get.height*0.15,
+            width: Get.width*0.15,
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
             child: Image.asset('assets/images/JWalls_appBar_big.png'),
           ).paddingOnly(left: 10, bottom: 5),
@@ -65,15 +79,13 @@ class _HomeState extends State<Home> {
           ),
         ),
         body: Obx(
-          () => Stack(
+          () => IndexedStack(
+            index: naviController.selectedIndex.value,
             children: List.generate(naviController.pages.length, (index) {
-              return Offstage(
-                offstage: naviController.selectedIndex.value != index,
-                child: Navigator(
-                  key: naviController.navigatorKeys[index],
-                  onGenerateRoute: (_) => MaterialPageRoute(
-                    builder: (_) => naviController.pages[index],
-                  ),
+              return Navigator(
+                key: naviController.navigatorKeys[index],
+                onGenerateRoute: (_) => MaterialPageRoute(
+                  builder: (_) => naviController.pages[index],
                 ),
               );
             }),
@@ -82,15 +94,13 @@ class _HomeState extends State<Home> {
         bottomNavigationBar: Obx(
           () => NavigationBar(
             elevation: 0,
-            height: height * 0.08,
+            height: height * 0.06,
             selectedIndex: naviController.selectedIndex.value,
             onDestinationSelected: (index) =>
                 naviController.selectedIndex.value = index,
             backgroundColor: darkMode ? Colors.black : Colors.white,
-            //labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-            indicatorColor: darkMode
-                ? Colors.transparent
-                : Colors.transparent,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+            indicatorColor: Colors.transparent,
             surfaceTintColor: Colors.transparent,
             destinations: [
               NavigationDestination(
@@ -108,14 +118,14 @@ class _HomeState extends State<Home> {
               NavigationDestination(
                 tooltip: "Search area",
                 selectedIcon: Icon(
-                  Icons.search,
+                  Icons.image,
                   color: darkMode ? Colors.white : Colors.black,
                 ),
                 icon: Icon(
-                  Icons.search_outlined,
+                  Icons.image_outlined,
                   color: darkMode ? Colors.white : Colors.black,
                 ),
-                label: 'Search',
+                label: 'Gallery',
               ),
               NavigationDestination(
                 tooltip: "Favourite zone",
@@ -147,20 +157,4 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-}
-
-class NaviController extends GetxController {
-  RxInt selectedIndex = 0.obs;
-
-  final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
-    4,
-    (index) => GlobalKey<NavigatorState>(),
-  );
-
-  final List<Widget> pages = [
-    const Homepage(),
-    const SearchPage(),
-    const FavPage(),
-    const Settings(),
-  ];
 }

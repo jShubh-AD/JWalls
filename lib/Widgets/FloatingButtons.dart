@@ -27,7 +27,7 @@ class FloatingButtons extends StatelessWidget {
       elevation: 0,
       spacing: 4,
       overlayOpacity: .3,
-      childrenButtonSize: Size(55, 66),
+      childrenButtonSize: Size(56, 67),
       backgroundColor: Colors.white,
       overlayColor: Colors.black,
       animatedIcon: AnimatedIcons.menu_close,

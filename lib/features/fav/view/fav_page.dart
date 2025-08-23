@@ -40,10 +40,12 @@ class _FavPageState extends State<FavPage> {
               children: [
                 InkWell(
                   onTap: (){
-                    Get.to(ViewImage(
-                      avtar: fav.avtar,
+                    Get.to(()=> ViewImage(
+                        avtar: fav.avtar,
                         imageBytes: fav.bytes,
-                        id: fav.id));
+                        id: fav.id),
+                      transition: Transition.rightToLeft
+                    );
                   },
                   child: Container(
                     height: ht,

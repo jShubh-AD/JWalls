@@ -93,6 +93,7 @@ class _HomepageState extends State<Homepage>
                             userName: wallpaper.userName,
                             name: wallpaper.name,
                           ),
+                          transition: Transition.rightToLeft,
                         );
                       },
                       child: CachedNetworkImage(
@@ -102,23 +103,6 @@ class _HomepageState extends State<Homepage>
                         placeholder: (context, url) {
                           return Container(color: Colors.grey.shade100);
                         },
-                        /*errorWidget: (build, url, error) => Container(
-                          color: Colors.grey.shade300,
-                          alignment: Alignment.center,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.wifi_off, color: Colors.black45),
-                              const SizedBox(height: 4),
-                              Text(
-                                'No connection',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: Colors.black45),
-                              ),
-                            ],
-                          ),
-                        ),*/
                       ),
                     ),
                   ),

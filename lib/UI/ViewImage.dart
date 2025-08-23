@@ -112,11 +112,9 @@ class _ViewImageState extends State<ViewImage> {
                           //await Future.delayed(const Duration(seconds: 2));
 
                           try {
-                            if (blurValue > 0 || widget.imageUrl!.isNotEmpty) {
-                              await setEditedWall(_previewController);
-                            } else {
-                              await setFavWall(widget.imageBytes!);
-                            }
+
+                            await setEditedWall(_previewController);
+
                             Get.snackbar(
                               'Wall Applied!',
                               'Enjoy your new wall.',
@@ -196,7 +194,11 @@ class _ViewImageState extends State<ViewImage> {
                   backgroundColor: Colors.white,
                   onPressed: () {
                     print(widget.userName);
-                    Get.to(() => Portfolio(userName: widget.userName!));
+                    Get.to(() => Portfolio(
+                        userName: widget.userName!
+                    ),transition: Transition.rightToLeft,
+
+                    );
                   },
                   child: CircleAvatar(
                     radius: 22,
@@ -288,24 +290,6 @@ class _ViewImageState extends State<ViewImage> {
                   },
                 ),
               ),
-            /*Positioned(
-              bottom: 100,
-              right: 80,
-              child: Container(
-                padding: EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: Homepage.borderRadius24,
-                ),
-                child: Text(
-                  '${widget.name}\nOn Unsplash',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),*/
           ],
         ),
       ),
@@ -394,7 +378,7 @@ class _ViewImageState extends State<ViewImage> {
 
   /// -------------------------------------------------SET WALLS -------------------------------------------------------------------
 
-  /// ================= SET PERSONALISED WALLPAPER ==============
+  /// ================= SET WALLPAPER ==============
 
   Future<void> setEditedWall(GlobalKey boundaryKey) async {
     // 1️⃣ Grab the RenderRepaintBoundary
@@ -413,7 +397,7 @@ class _ViewImageState extends State<ViewImage> {
     // 3️⃣ Save PNG to a temp file
     final tempDir = await getTemporaryDirectory();
     final filePath =
-        '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.png';
+        '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.jpg';
     final file = File(filePath);
     await file.writeAsBytes(bytes);
 
@@ -422,19 +406,6 @@ class _ViewImageState extends State<ViewImage> {
       file,
       WallpaperManagerFlutter.bothScreens,
     );
-    await file.delete();
-  }
-
-  /// ================= SET FAV WALLPAPER ==============
-
-  Future<void> setFavWall(Uint8List bytes) async {
-    final location = WallpaperManagerFlutter.bothScreens;
-    final dir = await getTemporaryDirectory();
-    final file = File(
-      "${dir.path}/JWalls_fav_${DateTime.now().microsecondsSinceEpoch}.png",
-    );
-    file.writeAsBytes(bytes);
-    await WallpaperManagerFlutter().setWallpaper(file, location);
     await file.delete();
   }
 }

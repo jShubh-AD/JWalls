@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:workmanager/workmanager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,10 +10,7 @@ import 'package:http/http.dart'as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:walpy/UI/gallery_page.dart';
 import 'package:walpy/core/http_const/api_const.dart';
-import 'package:walpy/data/DataSource/user_datasource.dart';
-import 'package:walpy/data/Models/UserModel.dart';
 import '../UI/HomePage.dart';
-import '../UI/SearchPage.dart';
 import '../UI/Settings.dart';
 import '../data/Models/Wallpapers.dart';
 import '../features/fav/view/fav_page.dart';
@@ -25,7 +23,7 @@ class ApiCall extends GetxController {
   Rx<bool> isLoading = true.obs;
   Rx<bool> isOnline = false.obs;
   Rx<bool> isPagination = false.obs;
-  Rx<bool> isSearchLoading =true.obs;
+  Rx<bool> isSearchLoading =false.obs;
   Rx<bool> noImageFound = false.obs;
   Rx<bool> hasMore = true.obs;
   int homPageNum = 1;
@@ -41,7 +39,7 @@ class ApiCall extends GetxController {
     const Homepage(),
     const GalleryPage(),
     const FavPage(),
-    const Settings(),
+    Settings(),
   ];
 
 
@@ -96,6 +94,14 @@ class ApiCall extends GetxController {
             precacheImage(CachedNetworkImageProvider(searchPhotos[j].urls!.small!), Get.context!);
           }
         });
+      }  else if(searchResponse.statusCode == 403) {
+        Get.snackbar(
+          'Limit exceeded',
+          'You have exceeded you limit for this hour.\nPlease try after 1 hour: ${searchResponse.statusCode}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white,
+        );
       }
      else  {
         Get.snackbar(
@@ -155,7 +161,17 @@ class ApiCall extends GetxController {
           }
         });
 
-      } else {
+      }
+      else if(response.statusCode == 403) {
+        Get.snackbar(
+          'Limit exceeded',
+          'You have exceeded you limit for this hour.\nPlease try after 1 hour: ${response.statusCode}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white,
+        );
+      }
+      else {
         Get.snackbar(
           'Error',
           'Server error: ${response.statusCode}',
@@ -187,6 +203,14 @@ class ApiCall extends GetxController {
       isPagination.value = false;
     }
   }
+
+  Future<void> fetchSingleWall ()async{
+    Workmanager();
+
+  }
+
+
+
 
   static Future<List<Wallpapers>> heavyTask(String responseBody) async{
     List<Wallpapers> wallpaper = <Wallpapers>[];

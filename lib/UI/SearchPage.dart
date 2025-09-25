@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:walpy/UI/ViewImage.dart';
 import 'package:walpy/Widgets/TextInput.dart';
 import 'package:walpy/features/fav/data/fav-model.dart';

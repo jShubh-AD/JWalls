@@ -7,7 +7,6 @@ import '../Get_Controller/settings_controller.dart';
 class Settings extends StatelessWidget {
   Settings({super.key});
 
-  final controller = Get.find<WallpaperSettingsController>();
   // Helper method to format duration to readable string
   String formatDuration(Duration duration) {
     if (duration.inMinutes < 60) {
@@ -18,34 +17,7 @@ class Settings extends StatelessWidget {
       return '${duration.inDays} day${duration.inDays == 1 ? '' : 's'}';
     }
   }
-
-  // Helper method to get source display name
-  String getSourceDisplayName(String source) {
-    switch (source.toUpperCase()) {
-      case 'WALLPAPER':
-        return 'Wallpaper';
-      case 'FAVOURITES':
-        return 'Favourites';
-      case 'NATURE':
-        return 'Nature';
-      case 'PATTERNS':
-        return 'Patterns';
-      case 'FILM':
-        return 'Film';
-      case 'STREET':
-        return 'Street';
-      case 'EXPERIMENTAL':
-        return 'Experimental';
-      case 'TRAVEL':
-        return 'Travel';
-      case 'ANIMAL':
-        return 'Animal';
-      case 'ANIME':
-        return 'Anime';
-      default:
-        return 'Wallpaper';
-    }
-  }
+  final controller = Get.find<WallpaperSettingsController>();
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +46,7 @@ class Settings extends StatelessWidget {
                 activeTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300, // subtle track
                 inactiveThumbColor: isDark ? Colors.grey.shade200 : Colors.grey.shade800, // thumb when OFF
                 inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
-                value: controller.constraints.value.autoSwitch,
+                value:  controller.autoSwitch.value,
                 onChanged: (val) {
                   controller.toggleAutoSwitch(val);
                 },
@@ -91,7 +63,7 @@ class Settings extends StatelessWidget {
               activeTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300, // subtle track
               inactiveThumbColor: isDark ? Colors.grey.shade200 : Colors.grey.shade800, // thumb when OFF
               inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
-              value: controller.constraints.value.wifiOnly,
+              value: controller.wifiOnly.value,
               onChanged: (val) {
                 controller.toggleWifiOnly(val);
               },
@@ -106,7 +78,7 @@ class Settings extends StatelessWidget {
               activeTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300, // subtle track
               inactiveThumbColor: isDark ? Colors.grey.shade200 : Colors.grey.shade800, // thumb when OFF
               inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
-              value: controller.constraints.value.chargingOnly,
+              value: controller.chargingOnly.value,
               onChanged: (val) {
                 controller.toggleChargingOnly(val);
               },
@@ -121,9 +93,9 @@ class Settings extends StatelessWidget {
               activeTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300, // subtle track
               inactiveThumbColor: isDark ? Colors.grey.shade200 : Colors.grey.shade800, // thumb when OFF
               inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
-              value: controller.constraints.value.batteryLow,
+              value: controller.batteryLow.value,
               onChanged: (val) {
-                controller.toggleBatteryOnly(val);
+               controller.toggleBatteryLow(val);
               },
             )),
           ),
@@ -136,9 +108,9 @@ class Settings extends StatelessWidget {
               activeTrackColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300, // subtle track
               inactiveThumbColor: isDark ? Colors.grey.shade200 : Colors.grey.shade800, // thumb when OFF
               inactiveTrackColor: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
-              value: controller.constraints.value.idleOnly,
+              value: controller.idleOnly.value,
               onChanged: (val) {
-                controller.toggleIdleOnly(val);
+               controller.toggleIdleOnly(val);
               },
             )),
           ),
@@ -157,7 +129,7 @@ class Settings extends StatelessWidget {
                   style: Theme.of(context).textTheme.headlineLarge!.copyWith(fontSize: 18),
                 ),
                 Obx(() => Text(
-                  'Each wallpaper will last for at least ${formatDuration(controller.constraints.value.interval)}.',
+                  'Each wallpaper will last for at least ${formatDuration(controller.interval.value)}.',
                   style: Theme.of(context).textTheme.displaySmall!.copyWith(fontSize: 14),
                 )),
               ],
@@ -184,10 +156,10 @@ class Settings extends StatelessWidget {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () {
-                    controller.updateInterval(Duration(minutes: 30));
+                    controller.updateInterval(Duration(minutes: 15));
                     Get.back();
                   },
-                  child: Text('30 minutes'),
+                  child: Text('15 minutes'),
                 ),
               ),
               SizedBox(
@@ -204,26 +176,6 @@ class Settings extends StatelessWidget {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () {
-                    controller.updateInterval(Duration(hours: 2));
-                    Get.back();
-                  },
-                  child: Text('2 hours'),
-                ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () {
-                    controller.updateInterval(Duration(hours: 4));
-                    Get.back();
-                  },
-                  child: Text('4 hours'),
-                ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () {
                     controller.updateInterval(Duration(hours: 6));
                     Get.back();
                   },
@@ -234,20 +186,20 @@ class Settings extends StatelessWidget {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () {
-                    controller.updateInterval(Duration(hours: 12));
+                    controller.updateInterval(Duration(days: 1));
                     Get.back();
                   },
-                  child: Text('12 hours'),
+                  child: Text('1 day'),
                 ),
               ),
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () {
-                    controller.updateInterval(Duration(hours: 24));
+                    controller.updateInterval(Duration(days: 7));
                     Get.back();
                   },
-                  child: Text('24 hours'),
+                  child: Text('7 days'),
                 ),
               ),
             ],

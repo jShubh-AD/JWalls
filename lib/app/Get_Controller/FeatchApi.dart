@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart'as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:walpy/UI/gallery_page.dart';
-import 'package:walpy/core/http_const/api_const.dart';
 import '../UI/HomePage.dart';
 import '../UI/Settings.dart';
+import '../UI/gallery_page.dart';
+import '../core/http_const/api_const.dart';
 import '../data/Models/Wallpapers.dart';
 import '../features/fav/view/fav_page.dart';
 

@@ -1,6 +1,7 @@
 import 'package:flutter/animation.dart';
 import 'package:get/get.dart';
-import 'package:walpy/core/shared_preferences.dart';
+
+import '../core/shared_preferences.dart';
 
 class WallpaperSettingsController extends GetxController with SingleGetTickerProviderMixin {
   RxBool isRolling = false.obs;

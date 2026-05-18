@@ -13,10 +13,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
-import 'package:walpy/UI/portFolio.dart';
-import 'package:walpy/Widgets/FloatingButtons.dart';
-import 'package:walpy/features/fav/data/fav-model.dart';
-import 'package:walpy/features/fav/data/hive_service.dart';
+import 'package:walpy/app/UI/portFolio.dart';
+import 'package:walpy/app/Widgets/FloatingButtons.dart';
+import 'package:walpy/app/features/fav/data/fav-model.dart';
+import 'package:walpy/app/features/fav/data/hive_service.dart';
 
 import '../Widgets/SliderWidget.dart';
 

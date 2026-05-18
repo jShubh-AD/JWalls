@@ -4,13 +4,13 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
-import 'Get_Controller/FeatchApi.dart';
-import 'Get_Controller/settings_controller.dart';
-import 'UI/Home.dart';
-import 'core/Theme/SystemTheme.dart';
-import 'core/callback_diapatcher.dart';
-import 'core/shared_preferences.dart';
-import 'features/fav/data/fav-model.dart';
+import 'app/Get_Controller/FeatchApi.dart';
+import 'app/Get_Controller/settings_controller.dart';
+import 'app/UI/Home.dart';
+import 'app/core/Theme/SystemTheme.dart';
+import 'app/core/callback_diapatcher.dart';
+import 'app/core/shared_preferences.dart';
+import 'app/features/fav/data/fav-model.dart';
 
 
 Future<void> setupAutoWallpaperTask() async {

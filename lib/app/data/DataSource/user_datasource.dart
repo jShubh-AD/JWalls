@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:walpy/core/http_const/api_const.dart';
 import 'package:get/get.dart';
-
+import '../../core/http_const/api_const.dart';
 import '../Models/UserModel.dart';
 
 class User_Datasource {

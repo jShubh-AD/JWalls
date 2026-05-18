@@ -7,11 +7,10 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:walpy/UI/ViewImage.dart';
-import 'package:walpy/features/fav/data/fav-model.dart';
-import 'package:walpy/features/fav/data/hive_service.dart';
-
 import '../Get_Controller/FeatchApi.dart';
+import '../features/fav/data/fav-model.dart';
+import '../features/fav/data/hive_service.dart';
+import 'ViewImage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});

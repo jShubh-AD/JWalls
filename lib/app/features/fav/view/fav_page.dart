@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
-import 'package:walpy/UI/ViewImage.dart';
-import 'package:walpy/features/fav/data/hive_service.dart';
 
+import '../../../UI/ViewImage.dart';
+import '../data/hive_service.dart';
 class FavPage extends StatefulWidget {
   const FavPage({super.key});
 

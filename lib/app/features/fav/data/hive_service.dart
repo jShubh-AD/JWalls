@@ -1,44 +1,8 @@
-/*import 'package:hive/hive.dart';
-import 'package:walpy/features/fav/data/fav-model.dart';
-
-class FavService {
-  Box<FavModel> box = Hive.box<FavModel>('favorites');
-
-  // get all items
-  List<FavModel> all() {
-    return box.values.toList();
-  }
-
-  bool contains(String wallId) {
-    return box.values.any((fav) => fav.id == wallId);  // O(n)
-  }
-
-  void add (FavModel fav){
-    box.add(fav);
-  }
-
-  void delete(FavModel fav){
-    box.delete(fav);
-  }
-  Future<bool> toggle(FavModel fav) async {
-    if(contains(fav.id)){
-      box.delete(fav);
-      print('remove ${fav.id}');
-      return false;
-    }else{
-      box.add(fav);
-      print('added ${fav.id}');
-      return true;
-    }
-  }
-
-}
-*/
-
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:walpy/features/fav/data/fav-model.dart';
+
+import 'fav-model.dart';
 
 
 class FavService {

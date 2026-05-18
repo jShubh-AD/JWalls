@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:walpy/Widgets/Conditions.dart';
+import 'package:walpy/app/Widgets/Conditions.dart';
 
 import '../Get_Controller/settings_controller.dart';
 

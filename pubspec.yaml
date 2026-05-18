@@ -55,6 +55,7 @@ dependencies:
   photo_manager: ^3.7.1
   lottie: ^3.3.1
   shared_preferences: ^2.5.3
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -92,6 +93,7 @@ flutter:
   assets:
     - assets/images/
     - assets/animations/
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

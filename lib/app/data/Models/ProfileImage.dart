@@ -1,11 +1,9 @@
 import 'dart:convert';
 
-ProfileImage profileImageFromJson(String str) => ProfileImage.fromJson(json.decode(str));
-String profileImageToJson(ProfileImage data) => json.encode(data.toJson());
 class ProfileImage {
   ProfileImage({
-      this.small, 
-      this.medium, 
+      this.small,
+      this.medium,
       this.large,});
 
   ProfileImage.fromJson(dynamic json) {

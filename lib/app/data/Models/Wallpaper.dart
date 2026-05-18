@@ -21,8 +21,8 @@
 /// asset_type : "photo"
 /// user : {"id":"zVp8SdK8twE","updated_at":"2025-06-04T10:46:14Z","username":"by_danny_g","name":"Danny Greenberg","first_name":"Danny","last_name":"Greenberg","twitter_username":null,"portfolio_url":"https://open.spotify.com/artist/6N4Dpg7qAykAxA95NaYKLX?si=qMTQdOPPSdGA_UMfPAGkBw","bio":"Hi there! Thanks so much for visiting my page—I really appreciate you stopping by. If you use any of my photos, I’d love to hear about it! Feel free to reach out via my Instagram (linked here) and let me know how and where they’re being used.","location":null,"links":{"self":"https://api.unsplash.com/users/by_danny_g","html":"https://unsplash.com/@by_danny_g","photos":"https://api.unsplash.com/users/by_danny_g/photos","likes":"https://api.unsplash.com/users/by_danny_g/likes","portfolio":"https://api.unsplash.com/users/by_danny_g/portfolio"},"profile_image":{"small":"https://images.unsplash.com/profile-fb-1598370484-9fa7b33ffe4a.jpg?ixlib=rb-4.1.0&crop=faces&fit=crop&w=32&h=32","medium":"https://images.unsplash.com/profile-fb-1598370484-9fa7b33ffe4a.jpg?ixlib=rb-4.1.0&crop=faces&fit=crop&w=64&h=64","large":"https://images.unsplash.com/profile-fb-1598370484-9fa7b33ffe4a.jpg?ixlib=rb-4.1.0&crop=faces&fit=crop&w=128&h=128"},"instagram_username":"estoric.wav","total_collections":0,"total_likes":2,"total_photos":1112,"total_promoted_photos":67,"total_illustrations":0,"total_promoted_illustrations":0,"accepted_tos":true,"for_hire":false,"social":{"instagram_username":"estoric.wav","portfolio_url":"https://open.spotify.com/artist/6N4Dpg7qAykAxA95NaYKLX?si=qMTQdOPPSdGA_UMfPAGkBw","twitter_username":null,"paypal_email":null}}
 
-class Wallpapers {
-  Wallpapers({
+class Wallpaper {
+  Wallpaper({
       String? id,
       num? width, 
       num? height, 
@@ -45,7 +45,11 @@ class Wallpapers {
     _name = name;
   }
 
-  Wallpapers.fromJson(dynamic json) {
+  static List<Wallpaper> fromJsonList(dynamic json) {
+    return (json as List).map((e) => Wallpaper.fromJson(e)).toList();
+  }
+
+  Wallpaper.fromJson(dynamic json) {
     _id = json['id'];
     _width = json['width'];
     _height = json['height'];
@@ -77,23 +81,6 @@ class Wallpapers {
   ProfileImage?  get avatar   => _avatar;
   String? get userName  => _userName;
   String? get name => _name;
-
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['id'] = _id;
-    map['width'] = _width;
-    map['height'] = _height;
-    map['color'] = _color;
-    map['blur_hash'] = _blurHash;
-    if (_urls != null) {
-      map['urls'] = _urls?.toJson();
-    }
-    if (_avatar != null) map['profile_image'] = _avatar!.toJson();
-    if (_userName != null) map['username']    = _userName;
-    if(_name != null) map['name'] = _name;
-    return map;
-  }
-
 }
 
 
@@ -115,25 +102,10 @@ class ProfileImage {
   String? _small;
   String? _medium;
   String? _large;
-ProfileImage copyWith({  String? small,
-  String? medium,
-  String? large,
-}) => ProfileImage(  small: small ?? _small,
-  medium: medium ?? _medium,
-  large: large ?? _large,
-);
+
   String? get small => _small;
   String? get medium => _medium;
   String? get large => _large;
-
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['small'] = _small;
-    map['medium'] = _medium;
-    map['large'] = _large;
-    return map;
-  }
-
 }
 
 
@@ -167,35 +139,11 @@ class Urls {
   String? _small;
   String? _thumb;
   String? _smallS3;
-Urls copyWith({  String? raw,
-  String? full,
-  String? regular,
-  String? small,
-  String? thumb,
-  String? smallS3,
-}) => Urls(  raw: raw ?? _raw,
-  full: full ?? _full,
-  regular: regular ?? _regular,
-  small: small ?? _small,
-  thumb: thumb ?? _thumb,
-  smallS3: smallS3 ?? _smallS3,
-);
+
   String? get raw => _raw;
   String? get full => _full;
   String? get regular => _regular;
   String? get small => _small;
   String? get thumb => _thumb;
   String? get smallS3 => _smallS3;
-
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    map['raw'] = _raw;
-    map['full'] = _full;
-    map['regular'] = _regular;
-    map['small'] = _small;
-    map['thumb'] = _thumb;
-    map['small_s3'] = _smallS3;
-    return map;
-  }
-
 }

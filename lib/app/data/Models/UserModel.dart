@@ -3,10 +3,8 @@ import 'ProfileImage.dart';
 import 'Photos.dart';
 import 'dart:convert';
 
-UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
-String userModelToJson(UserModel data) => json.encode(data.toJson());
-class UserModel {
-  UserModel({
+class PhotographerResponseModel {
+  PhotographerResponseModel({
       this.id,
       this.name,
       this.bio,
@@ -14,7 +12,7 @@ class UserModel {
       this.profileImage,
       this.photos,});
 
-  UserModel.fromJson(dynamic json) {
+  PhotographerResponseModel.fromJson(dynamic json) {
     id = json['id'];
     name = json['name'];
     bio = json['bio'];

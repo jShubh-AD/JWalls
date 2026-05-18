@@ -9,7 +9,7 @@ import '../Models/UserModel.dart';
 
 class User_Datasource {
   /// Fetches a user profile from Unsplash and maps it to `UserModel`.
-  Future<UserModel?> fetchUser(String id) async {
+  Future<PhotographerResponseModel?> fetchUser(String id) async {
 
     final uri = Uri.parse('${ApiConst.fetchUser}$id/${ApiConst.key}');
 
@@ -47,8 +47,8 @@ class User_Datasource {
     }
     return null;
   }
-  static Future<UserModel> heavyTask(String responseBody) async{
+  static Future<PhotographerResponseModel> heavyTask(String responseBody) async{
     Map<String,dynamic> data = jsonDecode(responseBody);
-      return UserModel.fromJson(data);
+      return PhotographerResponseModel.fromJson(data);
   }
 }

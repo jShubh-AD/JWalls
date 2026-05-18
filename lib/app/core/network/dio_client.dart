@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -22,11 +23,11 @@ class DioClient {
     _dio.interceptors.addAll([
       PrettyDioLogger(requestHeader: true, requestBody: true),
     ]);
+    log("Dio Client initialised",name: 'EVENT');
   }
 
   static final instance = DioClient._();
   late final Dio _dio;
-
   final _connectivity = Connectivity();
 
   Future<bool> isOnline() async {
@@ -43,7 +44,7 @@ class DioClient {
   }
 
   /// async get method
-  Future<dynamic> performGet({
+  Future<Response<dynamic>> performGet({
     required String url,
     required Map<String, dynamic> params,
   }) async {
@@ -52,13 +53,13 @@ class DioClient {
     }
     try{
       final response = await _dio.get(url,queryParameters: params);
-      return response.data;
+      return response;
     }on DioException catch(e){
       if (e.type == DioExceptionType.badResponse && e.response?.data != null) {
         final serverError = ErrorResponse.fromJson(e.response!.data);
-        throw serverError.errors?.first ?? _handleError(e);
+        throw Exception(serverError.errors?.first ?? _handleError(e));
       }
-      throw _handleError(e);
+      throw Exception(_handleError(e));
     }
   }
 

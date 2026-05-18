@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walpy/app/Get_Controller/user_controller.dart';
 
-import 'HomePage.dart';
+import '../modules/home/homepage.dart';
 
 class Portfolio extends StatefulWidget {
   const Portfolio({super.key, required this.userName});

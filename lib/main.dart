@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:walpy/app/core/network/dio_client.dart';
 import 'package:workmanager/workmanager.dart';
 import 'app/Get_Controller/FeatchApi.dart';
 import 'app/Get_Controller/settings_controller.dart';
@@ -113,6 +114,8 @@ void main() async {
   Hive.init(dir.path);
   Hive.registerAdapter(FavModelAdapter());
   await Hive.openBox<FavModel>('favorites');
+
+  DioClient.instance;
 
   Get.put(ApiCall());
   runApp(const MyApp());

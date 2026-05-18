@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 import 'package:workmanager/workmanager.dart';
-import '../data/Models/Wallpapers.dart';
+import '../data/Models/Wallpaper.dart';
 import 'package:flutter/services.dart';
 
 import 'network/api_const.dart';
@@ -68,7 +68,7 @@ Future<String?> _fetchRandomWallpaper(int timeoutSeconds) async {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> wallData = jsonDecode(response.body);
-      final wallpaper = Wallpapers.fromJson(wallData);
+      final wallpaper = Wallpaper.fromJson(wallData);
 
       if (wallpaper.urls?.full == null) {
         throw Exception('Invalid wallpaper URL received');

@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-Urls urlsFromJson(String str) => Urls.fromJson(json.decode(str));
-String urlsToJson(Urls data) => json.encode(data.toJson());
 class Urls {
   Urls({
       this.raw, 

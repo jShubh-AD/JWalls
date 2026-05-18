@@ -9,7 +9,7 @@ import 'package:walpy/app/UI/SearchPage.dart';
 import '../Get_Controller/settings_controller.dart';
 import '../core/callback_diapatcher.dart';
 import '../core/network/api_const.dart';
-import '../data/Models/Wallpapers.dart';
+import '../data/Models/Wallpaper.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -194,7 +194,7 @@ class _HomeState extends State<Home> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> wallData = jsonDecode(response.body);
-        final wallpaper = Wallpapers.fromJson(wallData);
+        final wallpaper = Wallpaper.fromJson(wallData);
 
         if (wallpaper.urls?.full == null) {
           throw Exception('Invalid wallpaper URL received');

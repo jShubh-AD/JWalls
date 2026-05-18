@@ -6,10 +6,14 @@ abstract class ApiConst {
 
   // Endpoints
   static const fetchUser = 'users/';
-  static const fetchImageId = 'photos/';
+  static const fetchImages = 'photos/';
   static const searchWall ='search/photos/';
   static const random = 'photos/random';
+  // static final key = '?client_id=$apiKey';
+
+  // Query Params
   static final key = '?client_id=$apiKey';
+  static final per_page = '20';
 
   // Timeout durations
   static const connectTimeout= Duration(seconds: 5);

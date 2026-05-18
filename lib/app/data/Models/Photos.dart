@@ -1,8 +1,6 @@
 import 'Urls.dart';
 import 'dart:convert';
 
-Photos photosFromJson(String str) => Photos.fromJson(json.decode(str));
-String photosToJson(Photos data) => json.encode(data.toJson());
 class Photos {
   Photos({
       this.id,

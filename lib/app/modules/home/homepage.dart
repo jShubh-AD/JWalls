@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -7,10 +6,10 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
-import '../Get_Controller/FeatchApi.dart';
-import '../modules/fav/data/fav-model.dart';
-import '../modules/fav/data/hive_service.dart';
-import 'ViewImage.dart';
+import '../../Get_Controller/FeatchApi.dart';
+import '../fav/data/fav-model.dart';
+import '../fav/data/hive_service.dart';
+import '../../UI/ViewImage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -44,7 +43,7 @@ class _HomepageState extends State<Homepage>
         // Trigger only on user‑initiated scrolling
         if (notif is ScrollUpdateNotification &&
             notif.metrics.pixels >=
-                notif.metrics.maxScrollExtent - 400 && // 300 px from bottom
+                notif.metrics.maxScrollExtent - 400 &&
             !fetchWalls.isPagination.value &&
             !fetchWalls.isLoading.value &&
             fetchWalls.hasMore.value) {
@@ -52,7 +51,7 @@ class _HomepageState extends State<Homepage>
           fetchWalls.homPageNum++;
           fetchWalls.fetchApi();
         }
-        return false; // allow other handlers to receive the event
+        return false;
       },
 
       child: Obx(() {

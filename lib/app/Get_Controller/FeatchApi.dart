@@ -11,9 +11,9 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import '../UI/HomePage.dart';
 import '../UI/Settings.dart';
 import '../UI/gallery_page.dart';
-import '../core/http_const/api_const.dart';
+import '../core/network/api_const.dart';
 import '../data/Models/Wallpapers.dart';
-import '../features/fav/view/fav_page.dart';
+import '../modules/fav/view/fav_page.dart';
 
 
 class ApiCall extends GetxController {
@@ -70,7 +70,7 @@ class ApiCall extends GetxController {
 
   void searchApi({required String search})async{
     print('search api called for $search and page $searchPageNum');
-    String searchUrl= '${ApiConst.searchWall.baseUrl()}${ApiConst.key}&per_page=19&page=$searchPageNum&query=$search';
+    String searchUrl= '${ApiConst.searchWall}${ApiConst.key}&per_page=19&page=$searchPageNum&query=$search';
     try{
       if (searchPageNum == 1) {
         isSearchLoading.value = true;
@@ -137,7 +137,7 @@ class ApiCall extends GetxController {
 
   Future<void> fetchApi() async {
     print('fetch api called page $homPageNum');
-    String url = '${ApiConst.fetchImageId.baseUrl()}${ApiConst.key}&per_page=20&page=$homPageNum';
+    String url = '${ApiConst.fetchImageId}${ApiConst.key}&per_page=20&page=$homPageNum';
     print(url);
     try {
       if (homPageNum == 1) {isLoading.value = true;}

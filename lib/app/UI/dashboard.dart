@@ -8,7 +8,7 @@ import 'package:walpy/app/Get_Controller/FeatchApi.dart';
 import 'package:walpy/app/UI/SearchPage.dart';
 import '../Get_Controller/settings_controller.dart';
 import '../core/callback_diapatcher.dart';
-import '../core/http_const/api_const.dart';
+import '../core/network/api_const.dart';
 import '../data/Models/Wallpapers.dart';
 
 class Home extends StatefulWidget {

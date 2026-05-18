@@ -4,8 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 import '../data/Models/Wallpapers.dart';
-import 'http_const/api_const.dart';
 import 'package:flutter/services.dart';
+
+import 'network/api_const.dart';
 
 const platform = MethodChannel('wallpaper_channel');
 

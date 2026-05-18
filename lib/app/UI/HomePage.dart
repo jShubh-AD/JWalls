@@ -8,8 +8,8 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import '../Get_Controller/FeatchApi.dart';
-import '../features/fav/data/fav-model.dart';
-import '../features/fav/data/hive_service.dart';
+import '../modules/fav/data/fav-model.dart';
+import '../modules/fav/data/hive_service.dart';
 import 'ViewImage.dart';
 
 class Homepage extends StatefulWidget {

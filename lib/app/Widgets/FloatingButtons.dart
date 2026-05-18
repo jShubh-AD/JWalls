@@ -9,7 +9,7 @@ class FloatingButtons extends StatelessWidget {
     required this.info,
     required this.editPressed,
     required this.downloadPressed,
-    required this.infoPressed
+    required this.infoPressed,
   });
 
   final Widget edit;
@@ -34,22 +34,28 @@ class FloatingButtons extends StatelessWidget {
       animatedIconTheme: IconThemeData(color: Colors.black),
       children: [
         SpeedDialChild(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            onTap: editPressed,
-            child: edit
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          onTap: editPressed,
+          child: edit,
         ),
         SpeedDialChild(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            onTap: downloadPressed,
-            child: download
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          onTap: downloadPressed,
+          child: download,
         ),
         SpeedDialChild(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-            onTap: infoPressed,
-            child: info
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          onTap: infoPressed,
+          child: info,
         ),
       ],
     );

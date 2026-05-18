@@ -1,15 +1,18 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class ApiConst {
+abstract class ApiConst {
   static final apiKey = dotenv.env['API_KEY'];
+  static const baseUrl ='https://api.unsplash.com/';
+
+  // Endpoints
   static const fetchUser = 'users/';
   static const fetchImageId = 'photos/';
   static const searchWall ='search/photos/';
   static const random = 'photos/random';
   static final key = '?client_id=$apiKey';
-}extension ApiUrls on String {
-  String baseUrl(){
-    const baseUrl ='https://api.unsplash.com/';
-    return baseUrl + this;
-  }
+
+  // Timeout durations
+  static const connectTimeout= Duration(seconds: 5);
+  static const receiveTimeout = Duration(seconds: 5);
+  static final sendTimeout = Duration(seconds: 5);
 }

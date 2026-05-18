@@ -1,16 +1,19 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'app/Get_Controller/FeatchApi.dart';
 import 'app/Get_Controller/settings_controller.dart';
-import 'app/UI/Home.dart';
+import 'app/UI/dashboard.dart';
 import 'app/core/Theme/SystemTheme.dart';
 import 'app/core/callback_diapatcher.dart';
 import 'app/core/shared_preferences.dart';
-import 'app/features/fav/data/fav-model.dart';
+import 'app/modules/fav/data/fav-model.dart';
 
 
 Future<void> setupAutoWallpaperTask() async {
@@ -36,7 +39,7 @@ Future<void> setupAutoWallpaperTask() async {
           requiresDeviceIdle: constraints['idleOnly'] == true,
           requiresBatteryNotLow: constraints['batteryLow'] != true,
         ),
-        inputData: constraints, // Pass constraints to the background task
+        inputData: constraints,
       );
       print('✅ Wallpaper task registered successfully');
       print('📋 Constraints: $constraints');
@@ -52,9 +55,8 @@ Future<void> setupAutoWallpaperTask() async {
 Future<void> cancelAutoWallpaperTask() async {
   try {
     await Workmanager().cancelByUniqueName("auto_wallpaper_task");
-    print('🛑 Wallpaper task cancelled');
-  } catch (e) {
-    print('❌ Error cancelling wallpaper task: $e');
+  } catch (e,st) {
+    log("[cancelingAutoWallpaperTask]",error: e, stackTrace: st);
   }
 }
 
@@ -71,6 +73,7 @@ void cleanupOldTempFiles() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+    await dotenv.load(fileName: ".env");
 
     // Initialize SharedPreferences first
     print('🔧 Initializing SharedPreferences...');

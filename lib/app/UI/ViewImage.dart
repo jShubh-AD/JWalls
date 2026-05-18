@@ -15,10 +15,9 @@ import 'package:photo_view/photo_view.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 import 'package:walpy/app/UI/portFolio.dart';
 import 'package:walpy/app/Widgets/FloatingButtons.dart';
-import 'package:walpy/app/features/fav/data/fav-model.dart';
-import 'package:walpy/app/features/fav/data/hive_service.dart';
-
 import '../Widgets/SliderWidget.dart';
+import '../modules/fav/data/fav-model.dart';
+import '../modules/fav/data/hive_service.dart';
 
 class ViewImage extends StatefulWidget {
   const ViewImage({

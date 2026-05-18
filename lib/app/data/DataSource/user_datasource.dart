@@ -4,14 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
-import '../../core/http_const/api_const.dart';
+import '../../core/network/api_const.dart';
 import '../Models/UserModel.dart';
 
 class User_Datasource {
   /// Fetches a user profile from Unsplash and maps it to `UserModel`.
   Future<UserModel?> fetchUser(String id) async {
 
-    final uri = Uri.parse('${ApiConst.fetchUser.baseUrl()}$id/${ApiConst.key}');
+    final uri = Uri.parse('${ApiConst.fetchUser}$id/${ApiConst.key}');
 
     try{
       final res = await http.get(uri);
@@ -52,4 +52,3 @@ class User_Datasource {
       return UserModel.fromJson(data);
   }
 }
-// ${ApiConst.fetchUser.baseUrl()}/$id/${ApiConst.key}

@@ -7,10 +7,9 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:walpy/app/UI/ViewImage.dart';
 import 'package:walpy/app/Widgets/TextInput.dart';
-import 'package:walpy/app/features/fav/data/fav-model.dart';
-import 'package:walpy/app/features/fav/data/hive_service.dart';
-
 import '../Get_Controller/FeatchApi.dart';
+import '../modules/fav/data/fav-model.dart';
+import '../modules/fav/data/hive_service.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});

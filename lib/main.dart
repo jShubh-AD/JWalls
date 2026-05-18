@@ -97,17 +97,6 @@ void main() async {
     print('🔧 Setting up auto wallpaper task...');
     await setupAutoWallpaperTask();
 
- /* final settingsController = Get.put(WallpaperSettingsController());
-
-  print('Initialing workManager');
-  cleanupOldTempFiles();
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-
-
-  print('calling setupAutoWallpaperTask');
-  setupAutoWallpaperTask(settingsController);*/
-
-
   PaintingBinding.instance.imageCache
     ..maximumSize = 300
     ..maximumSizeBytes = 250 << 20;

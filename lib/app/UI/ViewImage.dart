@@ -23,19 +23,19 @@ class ViewImage extends StatefulWidget {
   const ViewImage({
     super.key,
     this.userName,
-    this.smallUrl,
-    this.imageUrl,
+    this.lowQualityImageUrl,
+    this.hdImageUrl,
     this.imageBytes,
     this.name,
-    this.avtar,
+    this.profileImage,
     required this.id,
   });
 
-  final String? imageUrl;
+  final String? hdImageUrl;
   final Uint8List? imageBytes;
-  final String? smallUrl;
+  final String? lowQualityImageUrl;
   final String id;
-  final String? avtar;
+  final String? profileImage;
   final String? userName;
   final String? name;
 
@@ -57,8 +57,8 @@ class _ViewImageState extends State<ViewImage> {
 
     // Preload full-quality and update when ready
     ImageProvider fullImage;
-    if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
-      fullImage = CachedNetworkImageProvider(widget.imageUrl!);
+    if (widget.hdImageUrl != null && widget.hdImageUrl!.isNotEmpty) {
+      fullImage = CachedNetworkImageProvider(widget.hdImageUrl!);
     } else {
       fullImage = MemoryImage(widget.imageBytes!);
     }
@@ -77,7 +77,7 @@ class _ViewImageState extends State<ViewImage> {
 
   final GlobalKey _previewController = GlobalKey();
   late ImageProvider currentImageProvider = CachedNetworkImageProvider(
-    widget.smallUrl!,
+    widget.lowQualityImageUrl!,
   );
   bool isEdit = false;
   double blurValue = 0;
@@ -154,19 +154,19 @@ class _ViewImageState extends State<ViewImage> {
                   backgroundColor: Colors.white,
                   onPressed: () async {
                     late FavModel favM;
-                    if (widget.imageUrl != null &&
-                        widget.imageUrl!.isNotEmpty) {
-                      final bytes = urlToUnit8(widget.imageUrl!);
+                    if (widget.hdImageUrl != null &&
+                        widget.hdImageUrl!.isNotEmpty) {
+                      final bytes = urlToUnit8(widget.hdImageUrl!);
                       favM = FavModel(
                         id: widget.id,
                         bytes: await bytes,
-                        avtar: widget.avtar!,
+                        avtar: widget.profileImage!,
                       );
                     } else {
                       favM = FavModel(
                         id: widget.id,
                         bytes: widget.imageBytes!,
-                        avtar: widget.avtar!,
+                        avtar: widget.profileImage!,
                       );
                     }
                     bool like = await favo.toggle(favM);
@@ -202,7 +202,7 @@ class _ViewImageState extends State<ViewImage> {
                   child: CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.transparent,
-                    backgroundImage: CachedNetworkImageProvider(widget.avtar!),
+                    backgroundImage: CachedNetworkImageProvider(widget.profileImage!),
                   ),
                 ).paddingOnly(bottom: 10),
 
@@ -220,8 +220,8 @@ class _ViewImageState extends State<ViewImage> {
                   downloadPressed: () {
                     (blurValue > 0)
                         ? downloadEditedToGallery()
-                        : (widget.imageUrl?.isNotEmpty ?? false)
-                        ? downloadToGallery(widget.imageUrl, null)
+                        : (widget.hdImageUrl?.isNotEmpty ?? false)
+                        ? downloadToGallery(widget.hdImageUrl, null)
                         : downloadToGallery(null, widget.imageBytes!);
                   },
                   // info ---------

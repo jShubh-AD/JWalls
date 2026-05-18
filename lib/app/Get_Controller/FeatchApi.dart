@@ -1,21 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:walpy/app/core/network/dio_client.dart';
+import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import '../UI/Settings.dart';
 import '../UI/gallery_page.dart';
 import '../core/network/api_const.dart';
 import '../data/Models/Wallpaper.dart';
 import '../modules/fav/view/fav_page.dart';
-import '../modules/home/homepage.dart';
+import '../modules/home/presentation/view/homepage.dart';
 
 class ApiCall extends GetxController {
   final RxList<Wallpaper> photos = <Wallpaper>[].obs;
@@ -24,7 +23,7 @@ class ApiCall extends GetxController {
 
   Rx<bool> isLoading = true.obs;
   Rx<bool> isOnline = false.obs;
-  Rx<bool> isPagination = false.obs;
+  // Rx<bool> isPagination = false.obs;
   Rx<bool> isSearchLoading = false.obs;
   Rx<bool> noImageFound = false.obs;
   Rx<bool> hasMore = true.obs;
@@ -50,12 +49,12 @@ class ApiCall extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchApi();
+    fetchHomeWalls();
     _isOnInternet = InternetConnection().onStatusChange.listen((event) {
       if (event == InternetStatus.connected) {
         isOnline.value = true;
         if (photos.isEmpty && !isLoading.value) {
-          fetchApi();
+          fetchHomeWalls();
         }
       } else {
         isOnline.value = false;
@@ -85,7 +84,7 @@ class ApiCall extends GetxController {
             'query':search
           });
       if (searchResponse.statusCode == 200) {
-        final sWalls = await Wallpaper.fromJsonList(searchResponse.data['results']);
+        final sWalls = await compute(heavyParsing, searchResponse.data['results']);
         searchPhotos.addAll(sWalls);
 
         searchPhotos.isEmpty
@@ -100,6 +99,7 @@ class ApiCall extends GetxController {
             );
           }
         });
+
       } else if (searchResponse.statusCode == 403) {
         Get.snackbar(
           'Limit exceeded',
@@ -128,34 +128,21 @@ class ApiCall extends GetxController {
       );
     } finally {
       isSearchLoading.value = false;
-      isPagination.value = false;
     }
   }
 
-  Future<void> fetchApi() async {
-    print('fetch api called page $homPageNum');
-    String url =
-        '${ApiConst.fetchImages}${ApiConst.key}&per_page=20&page=$homPageNum';
-    print(url);
+  Future<void> fetchHomeWalls() async {
     try {
-      if (homPageNum == 1) {
-        isLoading.value = true;
-      }
-      // final response = await http.get(Uri.parse(url));
+      if (homPageNum == 1) isLoading.value = true;
+
       final response = await dio.performGet(
         url: ApiConst.fetchImages,
         params: {"per_page": ApiConst.per_page, "page": homPageNum},
       );
       if (response.statusCode == 200) {
-        final parsedWalls = Wallpaper.fromJsonList(response.data);
-
+        final parsedWalls = await compute(heavyParsing, response.data);
         if (homPageNum == 1) photos.clear();
-
-        final existingIds = photos.map((e) => e.id).toSet();
-        final uniquePhotos = parsedWalls
-            .where((w) => !existingIds.contains(w.id))
-            .toList();
-        photos.addAll(uniquePhotos);
+        photos.addAll(parsedWalls);
 
         // Pre-cache a few images for smoother UI
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -166,6 +153,7 @@ class ApiCall extends GetxController {
             );
           }
         });
+
       } else if (response.statusCode == 403) {
         Get.snackbar(
           'Limit exceeded',
@@ -174,25 +162,8 @@ class ApiCall extends GetxController {
           backgroundColor: Colors.red.withOpacity(0.8),
           colorText: Colors.white,
         );
-      } else {
-        Get.snackbar(
-          'Error',
-          'Server error: ${response.statusCode}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withOpacity(0.8),
-          colorText: Colors.white,
-        );
       }
-
       isOnline.value = true;
-    } on SocketException {
-      Get.snackbar(
-        'No Internet',
-        'Please check your connection.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
-      );
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -203,7 +174,7 @@ class ApiCall extends GetxController {
       );
     } finally {
       isLoading.value = false;
-      isPagination.value = false;
+      // isPagination.value = false;
     }
   }
 
@@ -211,12 +182,7 @@ class ApiCall extends GetxController {
     Workmanager();
   }
 
-  static Future<List<Wallpaper>> heavyTask(dynamic responseBody) async {
-    List<Wallpaper> wallpaper = <Wallpaper>[];
-    List<dynamic> data = jsonDecode(responseBody);
-    for (Map i in data) {
-      wallpaper.add(Wallpaper.fromJson(i));
-    }
-    return wallpaper;
+  static Future<List<Wallpaper>> heavyParsing(dynamic responseBody) async {
+    return Wallpaper.fromJsonList(responseBody);
   }
 }

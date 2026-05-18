@@ -6,15 +6,15 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
-import '../../Get_Controller/FeatchApi.dart';
-import '../fav/data/fav-model.dart';
-import '../fav/data/hive_service.dart';
-import '../../UI/ViewImage.dart';
+import '../../../../Get_Controller/FeatchApi.dart';
+import '../../../fav/data/fav-model.dart';
+import '../../../fav/data/hive_service.dart';
+import '../../../../UI/ViewImage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
 
-  static const BorderRadius borderRadius24 = BorderRadius.all(
+  static const BorderRadius borderRadius10 = BorderRadius.all(
     Radius.circular(10),
   );
 
@@ -40,23 +40,25 @@ class _HomepageState extends State<Homepage>
     final darkMode = isDarkMode(context);
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notif) {
-        // Trigger only on user‑initiated scrolling
         if (notif is ScrollUpdateNotification &&
-            notif.metrics.pixels >=
-                notif.metrics.maxScrollExtent - 400 &&
-            !fetchWalls.isPagination.value &&
+            notif.metrics.pixels >= notif.metrics.maxScrollExtent - 400 &&
+            // !fetchWalls.isPagination.value &&
             !fetchWalls.isLoading.value &&
             fetchWalls.hasMore.value) {
-          fetchWalls.isPagination.value = true;
+          // fetchWalls.isPagination.value = true;
           fetchWalls.homPageNum++;
-          fetchWalls.fetchApi();
+          fetchWalls.fetchHomeWalls();
         }
         return false;
       },
 
       child: Obx(() {
         if (fetchWalls.isLoading.value && fetchWalls.photos.isEmpty) {
-          return Center(child: CircularProgressIndicator(color: darkMode ? Colors.white : Colors.black ));
+          return Center(
+            child: CircularProgressIndicator(
+              color: darkMode ? Colors.white : Colors.black,
+            ),
+          );
         }
         if (fetchWalls.photos.isEmpty) {
           return Center(child: Text('No walls found'));
@@ -79,15 +81,15 @@ class _HomepageState extends State<Homepage>
                   width: double.infinity,
                   height: index.isEven ? 180 : 250,
                   child: ClipRRect(
-                    borderRadius: Homepage.borderRadius24,
+                    borderRadius: Homepage.borderRadius10,
                     child: GestureDetector(
                       onTap: () {
                         Get.to(
                           () => ViewImage(
-                            imageUrl: url.full!,
+                            hdImageUrl: url.full!,
                             id: wallpaper.id!,
-                            avtar: wallpaper.avatar!.medium,
-                            smallUrl: url.small!,
+                            profileImage: wallpaper.avatar!.medium,
+                            lowQualityImageUrl: url.small!,
                             userName: wallpaper.userName,
                             name: wallpaper.name,
                           ),
@@ -116,7 +118,7 @@ class _HomepageState extends State<Homepage>
                         onTap: () async => favService.toggle(
                           FavModel(
                             id: wallpaper.id!,
-                            bytes: await urltoUnit8(url.smallS3!),
+                            bytes: await urltoUnit8(url.small!),
                             avtar: wallpaper.avatar!.medium!,
                           ),
                         ),

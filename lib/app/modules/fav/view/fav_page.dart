@@ -41,7 +41,7 @@ class _FavPageState extends State<FavPage> {
                 InkWell(
                   onTap: (){
                     Get.to(()=> ViewImage(
-                        avtar: fav.avtar,
+                        profileImage: fav.avtar,
                         imageBytes: fav.bytes,
                         id: fav.id),
                       transition: Transition.rightToLeft

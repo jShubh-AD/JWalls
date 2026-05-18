@@ -194,7 +194,7 @@ class _HomeState extends State<Home> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> wallData = jsonDecode(response.body);
-        final wallpaper = Wallpaper.fromJson(wallData);
+        final wallpaper = OldWallpaperModle.fromJson(wallData);
 
         if (wallpaper.urls?.full == null) {
           throw Exception('Invalid wallpaper URL received');

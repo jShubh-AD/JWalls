@@ -77,9 +77,10 @@ class _SearchPageState extends State<SearchPage> {
                 onNotification: (notif) {
                   if (notif is ScrollUpdateNotification &&
                       notif.metrics.pixels >= notif.metrics.maxScrollExtent - 300 &&
-                      !fetchWalls.isSearchLoading.value &&
-                      !fetchWalls.isPagination.value) {
-                    fetchWalls.isPagination.value = true;
+                      !fetchWalls.isSearchLoading.value
+                  // &&  !fetchWalls.isPagination.value
+                  ) {
+                    // fetchWalls.isPagination.value = true;
                     fetchWalls.searchPageNum++;
                     fetchWalls.searchApi(search: fetchWalls.searchController.text);
                   }
@@ -124,10 +125,10 @@ class _SearchPageState extends State<SearchPage> {
                               borderRadius: SearchPage.borderRadius24,
                               child: GestureDetector(
                                 onTap: () => Get.to(() => ViewImage(
-                                  imageUrl: urls.full,
+                                  hdImageUrl: urls.full,
                                   id: searchWalls.id!,
-                                  avtar: searchWalls.avatar!.medium!,
-                                  smallUrl: urls.small,
+                                  profileImage: searchWalls.avatar!.medium!,
+                                  lowQualityImageUrl: urls.small,
                                   userName: searchWalls.userName,
                                   name: searchWalls.name,
                                 )),

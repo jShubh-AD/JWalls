@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walpy/app/Get_Controller/user_controller.dart';
 
-import '../modules/home/homepage.dart';
+import '../modules/home/presentation/view/homepage.dart';
 
 class Portfolio extends StatefulWidget {
   const Portfolio({super.key, required this.userName});
@@ -166,11 +166,11 @@ class _PortfolioState extends State<Portfolio> {
                         height: ht,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          borderRadius: Homepage.borderRadius24,
+                          borderRadius: Homepage.borderRadius10,
                           color: Colors.grey,
                         ),
                         child: ClipRRect(
-                          borderRadius: Homepage.borderRadius24,
+                          borderRadius: Homepage.borderRadius10,
                           child: GestureDetector(
                             onTap: () {},
                             // Get.to(() {

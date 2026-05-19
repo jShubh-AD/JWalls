@@ -106,7 +106,7 @@ class _DashboardState extends State<Dashboard> {
           elevation: 0,
           height: height * 0.06,
           selectedIndex: index,
-          onDestinationSelected: (i) => index = i,
+          onDestinationSelected: (i) => setState(() => index = i),
           backgroundColor: darkMode ? Colors.black : Colors.white,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
           indicatorColor: Colors.transparent,

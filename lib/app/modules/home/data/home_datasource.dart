@@ -11,7 +11,7 @@ class HomeDatasource {
   }) async {
     try{
       final response = await dio.performGet(url: url, params: params);
-      return compute(heavyParsing, response);
+      return compute(heavyParsing, response.data);
     }catch(e) {
       throw Exception(e);
     }

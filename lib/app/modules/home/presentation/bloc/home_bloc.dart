@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:walpy/app/core/app_errors/app_errors.dart';
@@ -15,6 +17,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(this._useCase) : super(HomeInitial()) {
     on<HomeFetch>(fetchHome);
     on<FetchNextPage>(fetchNextPage);
+
+    add(HomeFetch());
   }
 
   Future<void> fetchHome(HomeFetch event, Emitter<HomeState> emit) async {
@@ -22,10 +26,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     try {
       final walls = await _useCase.getWallpapers(
         params: {"per_page": ApiConst.per_page, "page": 1},
-        url: ApiConst.baseUrl,
+        url: ApiConst.baseUrl+ApiConst.fetchImages,
       );
-      emit(HomeLoaded(walls));
-    } catch (e) {
+      emit(HomeLoaded(walls,page: 1));
+    } catch (e, st) {
+      log(name: 'FetchHome', "",error: e,stackTrace: st);
       if (e is AppException) {
         emit(HomeError(e.message, e.statusCode));
       } else {
@@ -44,10 +49,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(HomeLoadingNext(currentList));
       final walls = await _useCase.getWallpapers(
         params: {"per_page": ApiConst.per_page, "page": nextPage},
-        url: ApiConst.baseUrl,
+        url: ApiConst.baseUrl+ApiConst.fetchImages,
       );
       emit(HomeLoaded([...currentList, ...walls], page: nextPage));
-    } catch (e) {
+    } catch (e, st) {
+      log(name: 'HomeLoadingNext', "",error: e,stackTrace: st);
       if (e is AppException) {
         emit(HomeErrorLoadingNext(currentList, e.message, e.statusCode));
       } else {

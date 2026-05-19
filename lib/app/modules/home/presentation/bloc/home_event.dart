@@ -7,11 +7,9 @@ sealed class HomeEvent extends Equatable {
 }
 
 class HomeFetch extends HomeEvent{
-  final int pageNum;
-  const HomeFetch({this.pageNum = 1});
-
+  const HomeFetch();
   @override
-  List<Object> get props => [pageNum];
+  List<Object> get props => [];
 }
 
 class FetchNextPage extends HomeEvent{}

@@ -48,12 +48,12 @@ class ApiCall extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchHomeWalls();
+    // fetchHomeWalls();
     _isOnInternet = InternetConnection().onStatusChange.listen((event) {
       if (event == InternetStatus.connected) {
         isOnline.value = true;
         if (photos.isEmpty && !isLoading.value) {
-          fetchHomeWalls();
+          // fetchHomeWalls();
         }
       } else {
         isOnline.value = false;
@@ -130,52 +130,52 @@ class ApiCall extends GetxController {
     }
   }
 
-  Future<void> fetchHomeWalls() async {
-    try {
-      if (homPageNum == 1) isLoading.value = true;
-
-      final response = await dio.performGet(
-        url: ApiConst.fetchImages,
-        params: {"per_page": ApiConst.per_page, "page": homPageNum},
-      );
-      if (response.statusCode == 200) {
-        final parsedWalls = await compute(heavyParsing, response.data);
-        if (homPageNum == 1) photos.clear();
-        photos.addAll(parsedWalls);
-
-        // // Pre-cache a few images for smoother UI
-        // WidgetsBinding.instance.addPostFrameCallback((_) {
-        //   for (int j = 0; j < photos.length && j < 5; j++) {
-        //     precacheImage(
-        //       CachedNetworkImageProvider(photos[j].urls!.small!),
-        //       Get.context!,
-        //     );
-        //   }
-        // });
-
-      } else if (response.statusCode == 403) {
-        Get.snackbar(
-          'Limit exceeded',
-          'You have exceeded you limit for this hour.\nPlease try after 1 hour: ${response.statusCode}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withOpacity(0.8),
-          colorText: Colors.white,
-        );
-      }
-      isOnline.value = true;
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Something went wrong!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-      // isPagination.value = false;
-    }
-  }
+  // Future<void> fetchHomeWalls() async {
+  //   try {
+  //     if (homPageNum == 1) isLoading.value = true;
+  //
+  //     final response = await dio.performGet(
+  //       url: ApiConst.fetchImages,
+  //       params: {"per_page": ApiConst.per_page, "page": homPageNum},
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final parsedWalls = await compute(heavyParsing, response.data);
+  //       if (homPageNum == 1) photos.clear();
+  //       photos.addAll(parsedWalls);
+  //
+  //       // // Pre-cache a few images for smoother UI
+  //       // WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       //   for (int j = 0; j < photos.length && j < 5; j++) {
+  //       //     precacheImage(
+  //       //       CachedNetworkImageProvider(photos[j].urls!.small!),
+  //       //       Get.context!,
+  //       //     );
+  //       //   }
+  //       // });
+  //
+  //     } else if (response.statusCode == 403) {
+  //       Get.snackbar(
+  //         'Limit exceeded',
+  //         'You have exceeded you limit for this hour.\nPlease try after 1 hour: ${response.statusCode}',
+  //         snackPosition: SnackPosition.BOTTOM,
+  //         backgroundColor: Colors.red.withOpacity(0.8),
+  //         colorText: Colors.white,
+  //       );
+  //     }
+  //     isOnline.value = true;
+  //   } catch (e) {
+  //     Get.snackbar(
+  //       'Error',
+  //       'Something went wrong!',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //       backgroundColor: Colors.red.withOpacity(0.8),
+  //       colorText: Colors.white,
+  //     );
+  //   } finally {
+  //     isLoading.value = false;
+  //     // isPagination.value = false;
+  //   }
+  // }
 
   Future<void> fetchSingleWall() async {
     Workmanager();

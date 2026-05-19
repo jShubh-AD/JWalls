@@ -96,9 +96,12 @@ class _DashboardState extends State<Dashboard> {
               index: index,
               children: [
                 const Homepage(),
-                const GalleryPage(),
-                const FavPage(),
-                const Settings(),
+                const Placeholder(),
+                const Placeholder(),
+                const Placeholder(),
+                // const GalleryPage(),
+                // const FavPage(),
+                // const Settings(),
               ]
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walpy/app/Get_Controller/user_controller.dart';
+import 'package:walpy/app/core/const/app_const.dart';
 
 import '../modules/home/presentation/view/homepage.dart';
 
@@ -166,11 +167,11 @@ class _PortfolioState extends State<Portfolio> {
                         height: ht,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          borderRadius: Homepage.borderRadius10,
+                          borderRadius: AppConst.borderRadius10,
                           color: Colors.grey,
                         ),
                         child: ClipRRect(
-                          borderRadius: Homepage.borderRadius10,
+                          borderRadius: AppConst.borderRadius10,
                           child: GestureDetector(
                             onTap: () {},
                             // Get.to(() {

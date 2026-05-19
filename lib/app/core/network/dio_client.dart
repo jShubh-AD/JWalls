@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:walpy/app/core/app_errors/app_errors.dart';
 import 'package:walpy/app/core/network/error_response_modle.dart';
 
 import 'api_const.dart';
@@ -49,17 +50,28 @@ class DioClient {
     required Map<String, dynamic> params,
   }) async {
     if(!await isOnline()){
-      throw "No internet connection";
+      throw AppException("No internet connection", statusCode: null);
     }
     try{
       final response = await _dio.get(url,queryParameters: params);
       return response;
     }on DioException catch(e){
-      if (e.type == DioExceptionType.badResponse && e.response?.data != null) {
-        final serverError = ErrorResponse.fromJson(e.response!.data);
-        throw Exception(serverError.errors?.first ?? _handleError(e));
+      if(e.type == DioExceptionType.badResponse && e.response?.data != null){
+        switch (e.response?.statusCode){
+          case 403:
+            throw AppException(
+                statusCode: 403,
+                "You have exceeded you limit for this hour.\nPlease try after 1 hour"
+            );
+          default:
+            final serverError = ErrorResponse.fromJson(e.response!.data);
+            throw AppException(
+                serverError.errors?.first ?? _handleError(e),
+                statusCode: e.response?.statusCode
+            );
+        }
       }
-      throw Exception(_handleError(e));
+      throw AppException(_handleError(e));
     }
   }
 

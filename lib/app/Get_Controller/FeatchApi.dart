@@ -12,7 +12,6 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import '../UI/Settings.dart';
 import '../UI/gallery_page.dart';
 import '../core/network/api_const.dart';
-import '../data/Models/Wallpaper.dart';
 import '../modules/fav/view/fav_page.dart';
 import '../modules/home/presentation/view/homepage.dart';
 
@@ -32,19 +31,19 @@ class ApiCall extends GetxController {
 
   StreamSubscription? _isOnInternet;
   final TextEditingController searchController = TextEditingController();
-  RxInt selectedIndex = 0.obs;
+  // RxInt selectedIndex = 0.obs;
 
-  final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
-    4,
-    (index) => GlobalKey<NavigatorState>(),
-  );
+  // final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
+  //   4,
+  //   (index) => GlobalKey<NavigatorState>(),
+  // );
 
-  final List<Widget> pages = [
-    const Homepage(),
-    const GalleryPage(),
-    const FavPage(),
-    Settings(),
-  ];
+  // final List<Widget> pages = [
+  //   const Homepage(),
+  //   const GalleryPage(),
+  //   const FavPage(),
+  //   Settings(),
+  // ];
 
   @override
   void onInit() {
@@ -144,15 +143,15 @@ class ApiCall extends GetxController {
         if (homPageNum == 1) photos.clear();
         photos.addAll(parsedWalls);
 
-        // Pre-cache a few images for smoother UI
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          for (int j = 0; j < photos.length && j < 5; j++) {
-            precacheImage(
-              CachedNetworkImageProvider(photos[j].urls!.small!),
-              Get.context!,
-            );
-          }
-        });
+        // // Pre-cache a few images for smoother UI
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        //   for (int j = 0; j < photos.length && j < 5; j++) {
+        //     precacheImage(
+        //       CachedNetworkImageProvider(photos[j].urls!.small!),
+        //       Get.context!,
+        //     );
+        //   }
+        // });
 
       } else if (response.statusCode == 403) {
         Get.snackbar(

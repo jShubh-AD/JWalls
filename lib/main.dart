@@ -1,5 +1,5 @@
 import 'dart:developer';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:walpy/app/core/network/dio_client.dart';
+import 'package:walpy/app/modules/home/domain/home_usecase.dart';
+import 'package:walpy/app/modules/home/presentation/bloc/home_bloc.dart';
 import 'package:workmanager/workmanager.dart';
 import 'app/Get_Controller/FeatchApi.dart';
 import 'app/Get_Controller/settings_controller.dart';
@@ -56,8 +58,8 @@ Future<void> setupAutoWallpaperTask() async {
 Future<void> cancelAutoWallpaperTask() async {
   try {
     await Workmanager().cancelByUniqueName("auto_wallpaper_task");
-  } catch (e,st) {
-    log("[cancelingAutoWallpaperTask]",error: e, stackTrace: st);
+  } catch (e, st) {
+    log("[cancelingAutoWallpaperTask]", error: e, stackTrace: st);
   }
 }
 
@@ -74,32 +76,32 @@ void cleanupOldTempFiles() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-    await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env");
 
-    // Initialize SharedPreferences first
-    print('🔧 Initializing SharedPreferences...');
-    await SharePreferences.init();
+  // Initialize SharedPreferences first
+  print('🔧 Initializing SharedPreferences...');
+  await SharePreferences.init();
 
-    // Initialize WorkManager
-    print('🔧 Initializing WorkManager...');
-    await Workmanager().initialize(
-      callbackDispatcher,
-      isInDebugMode: true,
-    );
+  // Initialize WorkManager
+  print('🔧 Initializing WorkManager...');
+  await Workmanager().initialize(
+    callbackDispatcher,
+    isInDebugMode: true,
+  );
 
-    // Clean up old temp files
-    cleanupOldTempFiles();
+  // Clean up old temp files
+  cleanupOldTempFiles();
 
-    // Initialize the settings controller
-    print('🔧 Initializing Settings Controller...');
-    final settingsController = Get.put(WallpaperSettingsController());
+  // Initialize the settings controller
+  print('🔧 Initializing Settings Controller...');
+  final settingsController = Get.put(WallpaperSettingsController());
 
-    // Wait for controller to load preferences
-    await Future.delayed(const Duration(milliseconds: 100));
+  // Wait for controller to load preferences
+  await Future.delayed(const Duration(milliseconds: 100));
 
-    // Setup WorkManager task based on current settings
-    print('🔧 Setting up auto wallpaper task...');
-    await setupAutoWallpaperTask();
+  // Setup WorkManager task based on current settings
+  print('🔧 Setting up auto wallpaper task...');
+  await setupAutoWallpaperTask();
 
   PaintingBinding.instance.imageCache
     ..maximumSize = 300
@@ -126,12 +128,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      themeMode: ThemeMode.system,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      home: Home(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<HomeBloc>(create: (context) => HomeBloc(HomeUseCase())),
+      ],
+      child: MaterialApp(
+        themeMode: ThemeMode.system,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        home: Dashboard(),
+      ),
     );
   }
 }

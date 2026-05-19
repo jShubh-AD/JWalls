@@ -6,6 +6,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:walpy/app/core/const/app_const.dart';
 import '../../../../Get_Controller/FeatchApi.dart';
 import '../../../fav/data/fav-model.dart';
 import '../../../fav/data/hive_service.dart';
@@ -13,10 +14,6 @@ import '../../../../UI/ViewImage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
-
-  static const BorderRadius borderRadius10 = BorderRadius.all(
-    Radius.circular(10),
-  );
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -81,7 +78,7 @@ class _HomepageState extends State<Homepage>
                   width: double.infinity,
                   height: index.isEven ? 180 : 250,
                   child: ClipRRect(
-                    borderRadius: Homepage.borderRadius10,
+                    borderRadius: AppConst.borderRadius10,
                     child: GestureDetector(
                       onTap: () {
                         Get.to(

@@ -13,10 +13,10 @@ abstract class ApiConst {
 
   // Query Params
   static final key = '?client_id=$apiKey';
-  static final per_page = '20';
+  static const per_page = 20;
 
   // Timeout durations
   static const connectTimeout= Duration(seconds: 5);
   static const receiveTimeout = Duration(seconds: 5);
-  static final sendTimeout = Duration(seconds: 5);
+  static const sendTimeout = Duration(seconds: 5);
 }

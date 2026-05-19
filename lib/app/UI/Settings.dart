@@ -5,7 +5,7 @@ import 'package:walpy/app/Widgets/Conditions.dart';
 import '../Get_Controller/settings_controller.dart';
 
 class Settings extends StatelessWidget {
-  Settings({super.key});
+  const Settings({super.key});
 
   // Helper method to format duration to readable string
   String formatDuration(Duration duration) {
@@ -17,10 +17,11 @@ class Settings extends StatelessWidget {
       return '${duration.inDays} day${duration.inDays == 1 ? '' : 's'}';
     }
   }
-  final controller = Get.find<WallpaperSettingsController>();
+
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<WallpaperSettingsController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SafeArea(
       child: Column(
@@ -144,6 +145,7 @@ class Settings extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) {
+        final controller = Get.find<WallpaperSettingsController>();
         return SizedBox(
           width: double.infinity,
           child: AlertDialog(

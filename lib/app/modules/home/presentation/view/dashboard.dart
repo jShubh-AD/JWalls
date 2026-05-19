@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:walpy/app/core/const/app_const.dart';
-import '../modules/fav/view/fav_page.dart';
-import '../modules/home/presentation/view/homepage.dart';
-import 'Settings.dart';
-import 'gallery_page.dart';
+import '../../../fav/view/fav_page.dart';
+import 'homepage.dart';
+import '../../../../UI/Settings.dart';
+import '../../../../UI/gallery_page.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -87,7 +87,7 @@ class _DashboardState extends State<Dashboard> {
         body: WillPopScope(
           onWillPop: () async {
             if (index != 0) {
-              index = 0;
+              setState(() => index = 0);
               return false;
             }
             return true;

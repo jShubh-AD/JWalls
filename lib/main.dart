@@ -12,7 +12,7 @@ import 'package:walpy/app/modules/home/presentation/bloc/home_bloc.dart';
 import 'package:workmanager/workmanager.dart';
 import 'app/Get_Controller/FeatchApi.dart';
 import 'app/Get_Controller/settings_controller.dart';
-import 'app/UI/dashboard.dart';
+import 'app/modules/home/presentation/view/dashboard.dart';
 import 'app/core/Theme/SystemTheme.dart';
 import 'app/core/callback_diapatcher.dart';
 import 'app/core/shared_preferences.dart';

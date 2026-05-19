@@ -26,11 +26,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     try {
       final walls = await _useCase.getWallpapers(
         params: {"per_page": ApiConst.per_page, "page": 1},
-        url: ApiConst.baseUrl+ApiConst.fetchImages,
+        url: ApiConst.baseUrl + ApiConst.fetchImages,
       );
-      emit(HomeLoaded(walls,page: 1));
+      emit(HomeLoaded(walls, page: 1));
     } catch (e, st) {
-      log(name: 'FetchHome', "",error: e,stackTrace: st);
+      log(name: 'FetchHome', "", error: e, stackTrace: st);
       if (e is AppException) {
         emit(HomeError(e.message, e.statusCode));
       } else {
@@ -43,21 +43,36 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     FetchNextPage event,
     Emitter<HomeState> emit,
   ) async {
-    final currentList = (state as HomeLoaded).walls;
-    final nextPage = (state as HomeLoaded).page + 1;
+    if (state is! HomeLoaded) return;
+    final currentState = (state as HomeLoaded);
+    if (currentState.isLoadingNext) return;
+
+    final currentList = currentState.walls;
+    final nextPage = currentState.page + 1;
+
+    emit(HomeLoaded(currentList, page: currentState.page, isLoadingNext: true));
+
     try {
-      emit(HomeLoadingNext(currentList));
       final walls = await _useCase.getWallpapers(
         params: {"per_page": ApiConst.per_page, "page": nextPage},
-        url: ApiConst.baseUrl+ApiConst.fetchImages,
+        url: ApiConst.baseUrl + ApiConst.fetchImages,
       );
-      emit(HomeLoaded([...currentList, ...walls], page: nextPage));
+      emit(
+        HomeLoaded(
+          [...currentList, ...walls],
+          page: nextPage,
+          isLoadingNext: false,
+        ),
+      );
     } catch (e, st) {
-      log(name: 'HomeLoadingNext', "",error: e,stackTrace: st);
+      emit(
+        HomeLoaded(currentList, page: currentState.page, isLoadingNext: false),
+      );
+      log(name: 'HomeLoadingNext', "", error: e, stackTrace: st);
       if (e is AppException) {
-        emit(HomeErrorLoadingNext(currentList, e.message, e.statusCode));
+        emit(HomeError(e.message, e.statusCode));
       } else {
-        emit(HomeErrorLoadingNext(currentList, e.toString(), null));
+        emit(HomeError(e.toString(), null));
       }
     }
   }

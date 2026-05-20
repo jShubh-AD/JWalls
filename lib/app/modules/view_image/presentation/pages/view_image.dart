@@ -1,23 +1,23 @@
-import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
-import 'package:walpy/app/Widgets/FloatingButtons.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
-import 'package:walpy/app/core/const/app_const.dart';
+import 'package:walpy/app/core/utils/const/app_const.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
-import '../../../../Widgets/SliderWidget.dart';
+import 'package:walpy/app/modules/view_image/bloc/view_image_bloc.dart';
+import 'package:walpy/app/modules/view_image/presentation/widgets/loading_fba.dart';
+import '../../../../core/Widgets/FloatingButtons.dart';
+import '../../../../core/Widgets/SliderWidget.dart';
+import '../../../../core/Widgets/app_snackbar.dart';
 import '../../../fav/data/fav-model.dart';
 import '../../../fav/data/hive_service.dart';
 
@@ -73,137 +73,131 @@ class _ViewImageState extends State<ViewImage> {
     print(widget.wallInfo.id);
     return Scaffold(
       extendBodyBehindAppBar: true,
-      floatingActionButton: isEdit
-          ? null
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ///  Set wall FAB:
-                FloatingActionButton(
-                  heroTag: null,
-                  splashColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  backgroundColor: Colors.white,
-                  onPressed: _isSettingWall
-                      ? null
-                      : () async {
-                          setState(() => _isSettingWall = true);
-                          try {
-                            await setEditedWall(_previewController);
-                            // todo: show snack bar
-                          } catch (e) {
-                            // todo: show snack bar
-                          } finally {
-                            if (mounted) {
-                              setState(() => _isSettingWall = false);
-                            }
-                          }
-                        },
-                  child: _isSettingWall
-                      ? const SizedBox(
-                          height: 32,
-                          width: 32,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3.5,
-                            color: Colors.black,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.done,
-                          size: 24,
-                          color: Colors.black,
-                        ),
-                ),
+      floatingActionButton: BlocConsumer<ViewImageBloc, ViewImageState>(
+        listener: (context, state) {
+          final messenger = ScaffoldMessenger.of(context);
 
-                /// Like FAB with setState logic to reBuild:
-                FloatingActionButton(
-                  heroTag: null,
-                  splashColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  backgroundColor: Colors.white,
-                  onPressed: () async {
-                    late FavModel favM;
-                    if (widget.wallInfo.urls?.full != null &&
-                        widget.wallInfo.urls!.full!.isNotEmpty) {
-                      final bytes = urlToUnit8(widget.wallInfo.urls!.full!);
-                      favM = FavModel(
-                        id: widget.wallInfo.id ?? "",
-                        bytes: await bytes,
-                        avtar: widget.wallInfo.avatar?.large ?? "",
-                      );
-                    } else {
-                      favM = FavModel(
-                        id: widget.wallInfo.id ?? "",
-                        bytes: widget.imageBytes!,
-                        avtar: widget.wallInfo.avatar?.large ?? "",
-                      );
-                    }
-                    bool like = await favo.toggle(favM);
-                    print('before setState isLike: $isLike');
-                    setState(() {
-                      isLike = like;
-                      print('after setstate isLike:$isLike');
-                    });
-                  },
-                  child: Icon(
-                    isLike ? Icons.favorite : Icons.favorite_border,
-                    color: isLike ? Colors.red : Colors.black,
-                    size: isLike ? 30 : 25,
-                  ),
-                ),
+          if(state is SetWallResultState){
+            AppSnackBar.show(
+              context,
+              title: state.title,
+              message: state.message,
+              isError: state.isError,
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is EditWallState) {
+            return SizedBox.shrink();
+          }
+          final isLoadingSet = state is ViewImageSetWallState;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
 
-                /// navigator to Author page with author image and User data FAB:
-                FloatingActionButton(
-                  heroTag: null,
-                  splashColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  backgroundColor: Colors.white,
-                  onPressed: () {
-                    context.pushNamed(
-                        AppRoutes.portfolio,
-                        queryParameters: {"userName": widget.wallInfo.userName}
+              LoadingFAB(
+                loading: isLoadingSet,
+                child: const Icon(
+                  Icons.now_wallpaper_rounded,
+                  size: 28,
+                  color: Colors.black,
+                ),
+                onPressed: () => context.read<ViewImageBloc>().add(
+                  ViewImageSetWall(_previewController),
+                ),
+              ),
+              AppConst.sizedBoxH10,
+
+              FloatingActionButton(
+                heroTag: null,
+                splashColor: Colors.transparent,
+                shape: AppConst.recBorderRadius24,
+                backgroundColor: Colors.white,
+                onPressed: () async {
+                  late FavModel favM;
+                  if (widget.wallInfo.urls?.full != null &&
+                      widget.wallInfo.urls!.full!.isNotEmpty) {
+                    final bytes = urlToUnit8(widget.wallInfo.urls!.full!);
+                    favM = FavModel(
+                      id: widget.wallInfo.id ?? "",
+                      bytes: await bytes,
+                      avtar: widget.wallInfo.avatar?.large ?? "",
                     );
-                  },
-                  child: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: Colors.transparent,
-                    backgroundImage: CachedNetworkImageProvider(
-                      widget.wallInfo.avatar?.large ?? "",
-                    ),
+                  } else {
+                    favM = FavModel(
+                      id: widget.wallInfo.id ?? "",
+                      bytes: widget.imageBytes!,
+                      avtar: widget.wallInfo.avatar?.large ?? "",
+                    );
+                  }
+                  bool like = await favo.toggle(favM);
+                  print('before setState isLike: $isLike');
+                  setState(() {
+                    isLike = like;
+                    print('after setstate isLike:$isLike');
+                  });
+                },
+                child: Icon(
+                  isLike ? Icons.favorite : Icons.favorite_border,
+                  color: isLike ? Colors.red : Colors.black,
+                  size: isLike ? 30 : 25,
+                ),
+              ),
+
+              AppConst.sizedBoxH10,
+
+              /// navigator to Author page with author image and User data FAB:
+              FloatingActionButton(
+                heroTag: null,
+                splashColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                backgroundColor: Colors.white,
+                onPressed: () {
+                  context.pushNamed(
+                    AppRoutes.portfolio,
+                    queryParameters: {"userName": widget.wallInfo.userName},
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 22,
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: CachedNetworkImageProvider(
+                    widget.wallInfo.avatar?.large ?? "",
                   ),
                 ),
+              ),
 
-                ///  Speed dial FAB(edit,download,info):
-                FloatingButtons(
-                  // edit -----------
-                  edit: Icon(Icons.edit, color: Colors.black),
-                  editPressed: () {
-                    setState(() {
-                      isEdit = !isEdit;
-                    });
-                  },
-                  // download -----------
-                  download: Icon(Icons.download, color: Colors.black),
-                  downloadPressed: () {
-                    (blurValue > 0)
-                        ? downloadEditedToGallery()
-                        : (widget.wallInfo.urls?.full?.isNotEmpty ?? false)
-                        ? downloadToGallery(widget.wallInfo.urls?.full, null)
-                        : downloadToGallery(null, widget.imageBytes!);
-                  },
-                  // info ---------
-                  info: Icon(Icons.info_outline, color: Colors.black),
-                  infoPressed: () {},
-                ),
-              ],
-            ),
+              AppConst.sizedBoxH10,
+
+              ///  Speed dial FAB(edit,download,info):
+              FloatingButtons(
+                // edit -----------
+                edit: Icon(Icons.edit, color: Colors.black),
+                editPressed: () {
+                  setState(() {
+                    isEdit = !isEdit;
+                  });
+                },
+                // download -----------
+                download: Icon(Icons.download, color: Colors.black),
+                downloadPressed: () {
+                  (blurValue > 0)
+                      ? downloadEditedToGallery()
+                      : (widget.wallInfo.urls?.full?.isNotEmpty ?? false)
+                      ? downloadToGallery(widget.wallInfo.urls?.full, null)
+                      : downloadToGallery(null, widget.imageBytes!);
+                },
+                // info ---------
+                info: Icon(Icons.info_outline, color: Colors.black),
+                infoPressed: () {},
+              ),
+            ],
+          );
+        },
+      ),
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -355,32 +349,32 @@ class _ViewImageState extends State<ViewImage> {
 
   /// ================= SET WALLPAPER ==============
 
-  Future<void> setEditedWall(GlobalKey boundaryKey) async {
-    // 1️⃣ Grab the RenderRepaintBoundary
-    final boundary =
-        boundaryKey.currentContext?.findRenderObject()
-            as RenderRepaintBoundary?;
-    if (boundary == null) {
-      // todo: show snack bar for not capturing edit
-      return;
-    }
-    // 2️⃣ Capture an image at high resolution (adjust ratio if needed)
-    final ui.Image uiImage = await boundary.toImage(pixelRatio: 3.0);
-    final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
-    final bytes = byteData!.buffer.asUint8List();
-
-    // 3️⃣ Save PNG to a temp file
-    final tempDir = await getTemporaryDirectory();
-    final filePath =
-        '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final file = File(filePath);
-    await file.writeAsBytes(bytes);
-
-    // 4️⃣ Set as wallpaper (both screens)
-    final ok = await WallpaperManagerFlutter().setWallpaper(
-      file,
-      WallpaperManagerFlutter.bothScreens,
-    );
-    await file.delete();
-  }
+  // Future<void> setEditedWall(GlobalKey boundaryKey) async {
+  //   // 1️⃣ Grab the RenderRepaintBoundary
+  //   final boundary =
+  //       boundaryKey.currentContext?.findRenderObject()
+  //           as RenderRepaintBoundary?;
+  //   if (boundary == null) {
+  //     // todo: show snack bar for not capturing edit
+  //     return;
+  //   }
+  //   // 2️⃣ Capture an image at high resolution (adjust ratio if needed)
+  //   final ui.Image uiImage = await boundary.toImage(pixelRatio: 3.0);
+  //   final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
+  //   final bytes = byteData!.buffer.asUint8List();
+  //
+  //   // 3️⃣ Save PNG to a temp file
+  //   final tempDir = await getTemporaryDirectory();
+  //   final filePath =
+  //       '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.jpg';
+  //   final file = File(filePath);
+  //   await file.writeAsBytes(bytes);
+  //
+  //   // 4️⃣ Set as wallpaper (both screens)
+  //   final ok = await WallpaperManagerFlutter().setWallpaper(
+  //     file,
+  //     WallpaperManagerFlutter.bothScreens,
+  //   );
+  //   await file.delete();
+  // }
 }

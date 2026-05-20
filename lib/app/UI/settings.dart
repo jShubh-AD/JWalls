@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:walpy/app/Widgets/Conditions.dart';
-
 import '../Get_Controller/settings_controller.dart';
+import '../core/Widgets/Conditions.dart';
 
 class Settings extends StatelessWidget {
   const Settings({super.key});

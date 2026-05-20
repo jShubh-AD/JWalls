@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:walpy/app/Widgets/wall.dart';
-import 'package:walpy/app/core/const/app_const.dart';
+import 'package:walpy/app/core/Widgets/wall.dart';
+import 'package:walpy/app/core/utils/const/app_const.dart';
 import 'package:walpy/app/modules/home/presentation/bloc/home_bloc.dart';
 import '../../../fav/data/hive_service.dart';
 

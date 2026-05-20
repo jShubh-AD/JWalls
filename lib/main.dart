@@ -18,6 +18,7 @@ import 'app/core/Theme/SystemTheme.dart';
 import 'app/core/callback_diapatcher.dart';
 import 'app/core/shared_preferences.dart';
 import 'app/modules/fav/data/fav-model.dart';
+import 'app/modules/view_image/bloc/view_image_bloc.dart';
 
 
 Future<void> setupAutoWallpaperTask() async {
@@ -132,6 +133,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<HomeBloc>(create: (context) => HomeBloc(HomeUseCase())),
+        BlocProvider<ViewImageBloc>(create: (context) => ViewImageBloc()),
       ],
       child: MaterialApp.router(
 

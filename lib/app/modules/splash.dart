@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
 
-import '../core/const/app_const.dart';
+import '../core/utils/const/app_const.dart';
 import 'home/presentation/bloc/home_bloc.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -21,6 +21,8 @@ class _SplashScreenState extends State<SplashScreen> {
     context.read<HomeBloc>().add(HomeFetch());
   }
 
+  int retryCount = 0;
+
   @override
   Widget build(BuildContext context) {
     final darkMode = AppConst.isDarkMode(context);
@@ -33,6 +35,15 @@ class _SplashScreenState extends State<SplashScreen> {
             listener: (context, state) {
               if(state is HomeLoaded){
                 context.goNamed(AppRoutes.dashboard);
+              }
+
+              if(state is HomeError){
+                if(retryCount >= 2){
+                  context.goNamed(AppRoutes.dashboard);
+                  return;
+                }
+                retryCount++;
+                context.read<HomeBloc>().add(HomeFetch());
               }
             },
             child: Column(

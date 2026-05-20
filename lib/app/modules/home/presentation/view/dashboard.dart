@@ -1,11 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:walpy/app/core/const/app_const.dart';
-import '../../../fav/view/fav.dart';
+import '../../../../core/utils/const/app_const.dart';
 import 'home.dart';
-import '../../../../UI/settings.dart';
-import '../../../../UI/gallery_page.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});

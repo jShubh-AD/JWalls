@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
-import 'package:walpy/app/modules/view_image/presentation/pages/view_image.dart';
-import 'package:walpy/app/Widgets/TextInput.dart';
 import '../Get_Controller/FeatchApi.dart';
+import '../core/Widgets/TextInput.dart';
 import '../modules/fav/data/fav-model.dart';
 import '../modules/fav/data/hive_service.dart';
 

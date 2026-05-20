@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/view_image/presentation/pages/view_image_args.dart';
-
-import '../core/const/app_const.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
+import '../utils/const/app_const.dart';
 
 class Wall extends StatelessWidget {
   final int index;

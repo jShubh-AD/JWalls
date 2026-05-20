@@ -22,10 +22,6 @@ class _HomepageState extends State<Homepage> {
   // @override
   // bool get wantKeepAlive => true; todo: don't remove this cmt maybe helpful for remembering scroll position
 
-  bool isDarkMode(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -41,7 +37,7 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     // super.build(context); todo: don't remove this cmt maybe helpful for remembering scroll position
-    final darkMode = isDarkMode(context);
+    final darkMode = AppConst.isDarkMode(context);
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
         if (state is HomeLoading) {

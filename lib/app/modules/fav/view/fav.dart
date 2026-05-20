@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 
-import '../../../UI/ViewImage.dart';
+import '../../view_image/presentation/pages/view_image.dart';
 import '../data/hive_service.dart';
 class FavPage extends StatefulWidget {
   const FavPage({super.key});
@@ -39,14 +39,15 @@ class _FavPageState extends State<FavPage> {
             return Stack(
               children: [
                 InkWell(
-                  onTap: (){
-                    Get.to(()=> ViewImage(
-                        profileImage: fav.avtar,
-                        imageBytes: fav.bytes,
-                        id: fav.id),
-                      transition: Transition.rightToLeft
-                    );
-                  },
+                  // onTap: (){
+                  //   Get.to(()=> ViewImage(
+                  //       profileImage: fav.avtar,
+                  //       imageBytes: fav.bytes,
+                  //       id: fav.id
+                  //   ),
+                  //     transition: Transition.rightToLeft
+                  //   );
+                  // },
                   child: Container(
                     height: ht,
                     width: double.infinity,

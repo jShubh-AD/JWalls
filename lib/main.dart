@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:walpy/app/core/app_routes/app_router.dart';
 import 'package:walpy/app/core/network/dio_client.dart';
 import 'package:walpy/app/modules/home/domain/home_usecase.dart';
 import 'package:walpy/app/modules/home/presentation/bloc/home_bloc.dart';
@@ -132,12 +133,13 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<HomeBloc>(create: (context) => HomeBloc(HomeUseCase())),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+
         themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        home: Dashboard(),
+        routerConfig: appRouter,
       ),
     );
   }

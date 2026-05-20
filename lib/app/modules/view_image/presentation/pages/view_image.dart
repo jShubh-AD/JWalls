@@ -2,42 +2,30 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
-import 'package:walpy/app/UI/portFolio.dart';
 import 'package:walpy/app/Widgets/FloatingButtons.dart';
-import '../Widgets/SliderWidget.dart';
-import '../modules/fav/data/fav-model.dart';
-import '../modules/fav/data/hive_service.dart';
+import 'package:walpy/app/core/app_routes/app_routes.dart';
+import 'package:walpy/app/core/const/app_const.dart';
+import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
+import '../../../../Widgets/SliderWidget.dart';
+import '../../../fav/data/fav-model.dart';
+import '../../../fav/data/hive_service.dart';
 
 class ViewImage extends StatefulWidget {
-  const ViewImage({
-    super.key,
-    this.userName,
-    this.lowQualityImageUrl,
-    this.hdImageUrl,
-    this.imageBytes,
-    this.name,
-    this.profileImage,
-    required this.id,
-  });
+  const ViewImage({super.key, this.imageBytes, required this.wallInfo});
 
-  final String? hdImageUrl;
+  final Wallpaper wallInfo;
   final Uint8List? imageBytes;
-  final String? lowQualityImageUrl;
-  final String id;
-  final String? profileImage;
-  final String? userName;
-  final String? name;
 
   @override
   State<ViewImage> createState() => _ViewImageState();
@@ -49,16 +37,12 @@ class _ViewImageState extends State<ViewImage> {
   @override
   void initState() {
     super.initState();
-    final likeNow = favo.contains(widget.id);
+    final likeNow = favo.contains(widget.wallInfo.id ?? "");
     setState(() => isLike = likeNow);
 
-    // Use low-quality image initially
-    // currentImageProvider = CachedNetworkImageProvider(widget.smallUrl!); // Replace with your small URL
-
-    // Preload full-quality and update when ready
     ImageProvider fullImage;
-    if (widget.hdImageUrl != null && widget.hdImageUrl!.isNotEmpty) {
-      fullImage = CachedNetworkImageProvider(widget.hdImageUrl!);
+    if (widget.wallInfo.urls?.full != null) {
+      fullImage = CachedNetworkImageProvider(widget.wallInfo.urls?.full ?? "");
     } else {
       fullImage = MemoryImage(widget.imageBytes!);
     }
@@ -77,7 +61,7 @@ class _ViewImageState extends State<ViewImage> {
 
   final GlobalKey _previewController = GlobalKey();
   late ImageProvider currentImageProvider = CachedNetworkImageProvider(
-    widget.lowQualityImageUrl!,
+    widget.wallInfo.urls?.small ?? "",
   );
   bool isEdit = false;
   double blurValue = 0;
@@ -86,7 +70,7 @@ class _ViewImageState extends State<ViewImage> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.id);
+    print(widget.wallInfo.id);
     return Scaffold(
       extendBodyBehindAppBar: true,
       floatingActionButton: isEdit
@@ -104,22 +88,14 @@ class _ViewImageState extends State<ViewImage> {
                   ),
                   backgroundColor: Colors.white,
                   onPressed: _isSettingWall
-                      ? null // disable while busy
+                      ? null
                       : () async {
                           setState(() => _isSettingWall = true);
-
-                          //await Future.delayed(const Duration(seconds: 2));
-
                           try {
-
                             await setEditedWall(_previewController);
-
-                            Get.snackbar(
-                              'Wall Applied!',
-                              'Enjoy your new wall.',
-                            );
+                            // todo: show snack bar
                           } catch (e) {
-                            Get.snackbar('Could not apply wall', 'Error: $e');
+                            // todo: show snack bar
                           } finally {
                             if (mounted) {
                               setState(() => _isSettingWall = false);
@@ -128,7 +104,6 @@ class _ViewImageState extends State<ViewImage> {
                         },
                   child: _isSettingWall
                       ? const SizedBox(
-                          key: ValueKey('loader'),
                           height: 32,
                           width: 32,
                           child: CircularProgressIndicator(
@@ -138,11 +113,10 @@ class _ViewImageState extends State<ViewImage> {
                         )
                       : const Icon(
                           Icons.done,
-                          key: ValueKey('done'),
                           size: 24,
                           color: Colors.black,
                         ),
-                ).paddingOnly(bottom: 10),
+                ),
 
                 /// Like FAB with setState logic to reBuild:
                 FloatingActionButton(
@@ -154,19 +128,19 @@ class _ViewImageState extends State<ViewImage> {
                   backgroundColor: Colors.white,
                   onPressed: () async {
                     late FavModel favM;
-                    if (widget.hdImageUrl != null &&
-                        widget.hdImageUrl!.isNotEmpty) {
-                      final bytes = urlToUnit8(widget.hdImageUrl!);
+                    if (widget.wallInfo.urls?.full != null &&
+                        widget.wallInfo.urls!.full!.isNotEmpty) {
+                      final bytes = urlToUnit8(widget.wallInfo.urls!.full!);
                       favM = FavModel(
-                        id: widget.id,
+                        id: widget.wallInfo.id ?? "",
                         bytes: await bytes,
-                        avtar: widget.profileImage!,
+                        avtar: widget.wallInfo.avatar?.large ?? "",
                       );
                     } else {
                       favM = FavModel(
-                        id: widget.id,
+                        id: widget.wallInfo.id ?? "",
                         bytes: widget.imageBytes!,
-                        avtar: widget.profileImage!,
+                        avtar: widget.wallInfo.avatar?.large ?? "",
                       );
                     }
                     bool like = await favo.toggle(favM);
@@ -181,7 +155,7 @@ class _ViewImageState extends State<ViewImage> {
                     color: isLike ? Colors.red : Colors.black,
                     size: isLike ? 30 : 25,
                   ),
-                ).paddingOnly(bottom: 10),
+                ),
 
                 /// navigator to Author page with author image and User data FAB:
                 FloatingActionButton(
@@ -192,19 +166,19 @@ class _ViewImageState extends State<ViewImage> {
                   ),
                   backgroundColor: Colors.white,
                   onPressed: () {
-                    print(widget.userName);
-                    Get.to(() => Portfolio(
-                        userName: widget.userName!
-                    ),transition: Transition.rightToLeft,
-
+                    context.pushNamed(
+                        AppRoutes.portfolio,
+                        queryParameters: {"userName": widget.wallInfo.userName}
                     );
                   },
                   child: CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.transparent,
-                    backgroundImage: CachedNetworkImageProvider(widget.profileImage!),
+                    backgroundImage: CachedNetworkImageProvider(
+                      widget.wallInfo.avatar?.large ?? "",
+                    ),
                   ),
-                ).paddingOnly(bottom: 10),
+                ),
 
                 ///  Speed dial FAB(edit,download,info):
                 FloatingButtons(
@@ -220,8 +194,8 @@ class _ViewImageState extends State<ViewImage> {
                   downloadPressed: () {
                     (blurValue > 0)
                         ? downloadEditedToGallery()
-                        : (widget.hdImageUrl?.isNotEmpty ?? false)
-                        ? downloadToGallery(widget.hdImageUrl, null)
+                        : (widget.wallInfo.urls?.full?.isNotEmpty ?? false)
+                        ? downloadToGallery(widget.wallInfo.urls?.full, null)
                         : downloadToGallery(null, widget.imageBytes!);
                   },
                   // info ---------
@@ -229,15 +203,34 @@ class _ViewImageState extends State<ViewImage> {
                   infoPressed: () {},
                 ),
               ],
-            ).paddingOnly(bottom: 15),
-      appBar: AppBar(backgroundColor: Colors.transparent),
+            ),
+
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              color: Colors.white54,
+              borderRadius: AppConst.borderRadius18,
+              onPressed: () => context.pop(),
+              child: const Icon(
+                CupertinoIcons.back,
+                size: 28,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+      ),
       body: RepaintBoundary(
         key: _previewController,
         child: Stack(
           fit: StackFit.expand,
           children: [
             PhotoView(
-              filterQuality: FilterQuality.low,
+              filterQuality: FilterQuality.high,
               imageProvider: currentImageProvider,
               minScale: PhotoViewComputedScale.covered,
               maxScale: PhotoViewComputedScale.covered,
@@ -269,23 +262,17 @@ class _ViewImageState extends State<ViewImage> {
                 right: 0,
                 child: BlurSliderWidget(
                   checkPressed: () {
-                    setState(() {
-                      isEdit = false;
-                    });
+                    setState(() => isEdit = false);
                   },
                   closePressed: () {
                     setState(() {
                       blurValue = 0.0;
-                      print(blurValue);
                       isEdit = false;
                     });
                   },
                   value: blurValue,
                   onChanged: (val) {
-                    setState(() {
-                      blurValue = val;
-                      print(blurValue);
-                    });
+                    setState(() => blurValue = val);
                   },
                 ),
               ),
@@ -323,9 +310,9 @@ class _ViewImageState extends State<ViewImage> {
     );
 
     if (result['isSuccess']) {
-      Get.snackbar('Saved', 'Edited wall saved to gallery.');
+      // todo: show snack bar for edit saved in gallery
     } else {
-      Get.snackbar('Failed', 'Could not save wall.');
+      // todo: show snack bar for not saving edit in gallery
     }
   }
 
@@ -342,10 +329,7 @@ class _ViewImageState extends State<ViewImage> {
   Future<void> downloadToGallery(String? imageUrl, Uint8List? imgBytes) async {
     final permission = await Permission.storage.request();
     if (!permission.isGranted && permission != permission.isLimited) {
-      Get.snackbar(
-        'Permission Denied.',
-        'Please allow the storage permission to download.',
-      );
+      // todo: show snack bar permission denied
       return;
     }
     try {
@@ -361,17 +345,9 @@ class _ViewImageState extends State<ViewImage> {
             "JWalls_here_"
             '${DateTime.now().millisecondsSinceEpoch}',
       );
-      print(results);
-      if (results != null) {
-        Get.snackbar(
-          'Image saved',
-          'Image saved in gallery\nShow your support to dev.',
-        );
-      } else {
-        Get.snackbar('Something went wrong', '');
-      }
+      // todo: show snack bar image saved
     } catch (e) {
-      Get.snackbar('Error', 'Something went wrong: $e');
+      // todo: show snack bar of error
     }
   }
 
@@ -385,7 +361,7 @@ class _ViewImageState extends State<ViewImage> {
         boundaryKey.currentContext?.findRenderObject()
             as RenderRepaintBoundary?;
     if (boundary == null) {
-      Get.snackbar('Error', 'Could not capture the edit.');
+      // todo: show snack bar for not capturing edit
       return;
     }
     // 2️⃣ Capture an image at high resolution (adjust ratio if needed)

@@ -9,11 +9,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import '../UI/Settings.dart';
+import '../UI/settings.dart';
 import '../UI/gallery_page.dart';
 import '../core/network/api_const.dart';
-import '../modules/fav/view/fav_page.dart';
-import '../modules/home/presentation/view/homepage.dart';
+import '../modules/fav/view/fav.dart';
+import '../modules/home/presentation/view/home.dart';
 
 class ApiCall extends GetxController {
   final RxList<Wallpaper> photos = <Wallpaper>[].obs;

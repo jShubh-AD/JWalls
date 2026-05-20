@@ -17,8 +17,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(this._useCase) : super(HomeInitial()) {
     on<HomeFetch>(fetchHome);
     on<FetchNextPage>(fetchNextPage);
-
-    add(HomeFetch());
   }
 
   Future<void> fetchHome(HomeFetch event, Emitter<HomeState> emit) async {

@@ -13,8 +13,13 @@ part 'view_image_event.dart';
 part 'view_image_state.dart';
 
 class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
-  ViewImageBloc() : super(ViewImageInitial()) {
+  ViewImageBloc() : super(const ViewImageState()) {
+    // set wall events
     on<ViewImageSetWall>(viewImageSetWall);
+
+    // download wall events
+
+    // like wall events
     on<ViewImageLikeWall>(viewImageLikeWall);
 
     // edit events
@@ -24,8 +29,16 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
     on<EditingWallDone>(editingWallDone);
   }
 
+  // set wall event
   Future<void> viewImageSetWall(ViewImageSetWall event, Emitter<ViewImageState> emit,) async {
-    emit(ViewImageSetWallState());
+    emit(
+        state.copyWith(
+          isSettingWall: true,
+          isError: false,
+          showSnack: false,
+          title: "",
+          message: ""
+        ));
     try {
       final boundary =
           event.boundaryKey.currentContext?.findRenderObject()
@@ -33,11 +46,13 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
 
       if (boundary == null) {
         emit(
-          SetWallResultState(
-            "Error setting wall",
-            "Could not capture image, please try again",
-            isError:  true
-          ),
+            state.copyWith(
+                isSettingWall: false,
+                isError: true,
+                showSnack: true,
+                title: "Error setting wall",
+                message: "Could not capture image, please try again"
+            )
         );
       }
 
@@ -57,50 +72,56 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
       );
       if (ok)
         emit(
-          SetWallResultState(
-            "Vibe Matched!",
-            "Wall set to match your vive.",
-            isError:  false
-          ),
+            state.copyWith(
+                isSettingWall: false,
+                isError: false,
+                showSnack: true,
+                title: "Vibe Matched!",
+                message: "Wall set to match your vive."
+            )
         );
+
       await file.delete();
     } catch (e, st) {
       log(name: "Set Wall", "(viewImageSetWall)", error: e,stackTrace: st);
       emit(
-        SetWallResultState(
-          "Couldn't match vibe!",
-          "Could not set Wall, please try again.",
-          isError: true
-        ),
+          state.copyWith(
+              isSettingWall: false,
+              isError: true,
+              showSnack: true,
+              title: "Couldn't match vibe!",
+              message: "Could not set Wall, please try again."
+          )
       );
     }
   }
 
+  // like wall event
   Future<void> viewImageLikeWall(
     ViewImageEvent event,
     Emitter<ViewImageState> emit,
   ) async {}
 
+  // edit wall event
   Future<void> editingWall(EditingWall event, Emitter<ViewImageState> emit) async {
-    final blur = state is EditingWallDoneState
-        ? (state as EditingWallDoneState).blur
-        : 0.0;
-    emit(EditingWallState(blur: blur));
+    emit(state.copyWith(showSnack: false,editStatus: EditStatus.editing));
   }
 
   Future<void> editingWallBlurChanged(EditWallBlurChanged event, Emitter<ViewImageState> emit) async {
-    emit(EditingWallState(blur: event.blur));
+    if(state.editStatus == EditStatus.editing){
+      emit(state.copyWith(showSnack: false,blur: event.blur));
+    }
   }
 
   Future<void> editingWallCancel(EditingWallCancel event, Emitter<ViewImageState> emit) async {
-    emit(ViewImageInitial());
+    if(state.editStatus == EditStatus.editing){
+      emit(state.copyWith(showSnack: false,blur: 0.0, editStatus: EditStatus.initial));
+    }
   }
 
   Future<void> editingWallDone(EditingWallDone event, Emitter<ViewImageState> emit) async {
-    final blur = state is EditingWallState
-        ? (state as EditingWallState).blur
-        : 0.0;
-    emit(EditingWallDoneState(blur: blur));
-    // throw some error like like save or no changes made or just rest blur
+    if(state.editStatus == EditStatus.editing){
+      emit(state.copyWith(showSnack: false,editStatus: EditStatus.done));
+    }
   }
 }

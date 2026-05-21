@@ -1,40 +1,50 @@
 part of 'view_image_bloc.dart';
 
-sealed class ViewImageState extends Equatable {
-  const ViewImageState();
+enum EditStatus { initial, editing, done }
 
-  @override
-  List<Object> get props => [];
-}
-
-final class ViewImageInitial extends ViewImageState {}
-
-final class ViewImageSetWallState extends ViewImageState{}
-
-final class SetWallResultState extends ViewImageState{
+class ViewImageState extends Equatable {
+  final EditStatus editStatus;
   final String title;
+  final double blur;
+  final bool isSettingWall;
+  final bool isDownloading;
   final bool isError;
+  final bool showSnack;
   final String message;
-  const SetWallResultState(this.title, this.message, {required this.isError});
+
+  const ViewImageState({
+    this.editStatus = EditStatus.initial,
+    this.blur = 0.0,
+    this.isDownloading = false,
+    this.isSettingWall = false,
+    this.isError = false,
+    this.showSnack = false,
+    this.title = "",
+    this.message = "",
+  });
+
+  ViewImageState copyWith({
+    final EditStatus? editStatus,
+    final String? title,
+    final double? blur,
+    final bool? isSettingWall,
+    final bool? isDownloading,
+    final bool? isError,
+    final bool? showSnack,
+    final String? message,
+}){
+    return ViewImageState(
+      editStatus: editStatus ?? this.editStatus,
+      blur: blur ?? this.blur,
+      isSettingWall: isSettingWall ?? this.isSettingWall,
+      isDownloading: isDownloading ?? this.isDownloading,
+      title: title ?? this.title,
+      message: message ?? this.message,
+      isError: isError ?? this.isError,
+      showSnack : showSnack ?? this.showSnack
+    );
+  }
+
   @override
-  List<Object> get props => [title, message, isError];
+  List<Object?> get props => [blur,editStatus,title, message, isError, isSettingWall, isDownloading];
 }
-
-final class LikeWallState extends ViewImageState{}
-
-final class DownloadWallState extends ViewImageState{}
-
-final class EditingWallState extends ViewImageState{
-  final double blur;
-  const EditingWallState({this.blur = 0.0});
-  @override
-  List<Object> get props => [blur];
-}
-
-final class EditingWallDoneState extends ViewImageState{
-  final double blur;
-  const EditingWallDoneState({required this.blur});
-  @override
-  List<Object> get props => [blur];
-}
-

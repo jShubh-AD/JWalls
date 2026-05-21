@@ -44,12 +44,9 @@ class BlurSliderWidget extends StatelessWidget {
               ],
             ),
             BlocBuilder<ViewImageBloc, ViewImageState>(
+              buildWhen: (prev, curr) => prev.blur != curr.blur,
               builder: (context, state) {
-                final blur = switch (state) {
-                  EditingWallState(:final blur) => blur,
-                  EditingWallDoneState(:final blur) => blur,
-                  _ => 0.0
-                };
+                final blur = state.blur;
                 return Slider(
                   value: blur,
                   onChanged: (v) => context.read<ViewImageBloc>().add(

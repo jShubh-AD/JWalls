@@ -72,7 +72,7 @@ class _ViewImageState extends State<ViewImage> {
       extendBodyBehindAppBar: true,
       floatingActionButton: BlocConsumer<ViewImageBloc, ViewImageState>(
         listener: (context, state) {
-          if (state is SetWallResultState) {
+          if (state.showSnack) {
             AppSnackBar.show(
               context,
               title: state.title,
@@ -82,16 +82,15 @@ class _ViewImageState extends State<ViewImage> {
           }
         },
         builder: (context, state) {
-          if (state is EditingWallState) {
+          if (state.editStatus == EditStatus.editing) {
             return SizedBox.shrink();
           }
-          final isLoadingSet = state is ViewImageSetWallState;
           return Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               LoadingFAB(
-                loading: isLoadingSet,
+                loading: state.isSettingWall,
                 child: const Icon(
                   Icons.now_wallpaper_rounded,
                   size: 28,
@@ -232,21 +231,13 @@ class _ViewImageState extends State<ViewImage> {
             ),
 
             BlocBuilder<ViewImageBloc, ViewImageState>(
-              buildWhen: (prev, curr) {
-                final prevBlur = prev is EditingWallState ? prev.blur
-                    : prev is EditingWallDoneState ? prev.blur : 0.0;
-                final currBlur = curr is EditingWallState ? curr.blur
-                    : curr is EditingWallDoneState ? curr.blur : 0.0;
-                return prevBlur != currBlur;
-              },
+              buildWhen: (prev, curr) => prev.blur != curr.blur,
               builder: (context, state) {
                 print(("filter rebuild"));
-                final blur = state is EditingWallState ? state.blur
-                    : state is EditingWallDoneState ? state.blur : 0.0;
-                if (blur == 0.0) return const SizedBox.shrink();
+                if (state.blur == 0.0) return const SizedBox.shrink();
                 return Positioned.fill(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                    filter: ImageFilter.blur(sigmaX: state.blur, sigmaY: state.blur),
                     child: Container(),
                   ),
                 );
@@ -254,11 +245,10 @@ class _ViewImageState extends State<ViewImage> {
             ),
 
             BlocBuilder<ViewImageBloc, ViewImageState>(
-              buildWhen: (prev, curr) =>
-              (prev is EditingWallState) != (curr is EditingWallState),
+              buildWhen: (prev, curr) => prev.editStatus != curr.editStatus,
               builder: (context, state) {
                 print(("slider rebuild"));
-                if (state is! EditingWallState) return const SizedBox.shrink();
+                if (state.editStatus != EditStatus.editing ) return const SizedBox.shrink();
                 return Positioned(
                   bottom: 80,
                   left: 0,

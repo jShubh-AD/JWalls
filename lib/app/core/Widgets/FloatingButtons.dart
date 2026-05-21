@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:walpy/app/modules/view_image/presentation/widgets/loading_fba.dart';
 
 class FloatingButtons extends StatelessWidget {
   const FloatingButtons({
@@ -10,11 +11,13 @@ class FloatingButtons extends StatelessWidget {
     required this.editPressed,
     required this.downloadPressed,
     required this.infoPressed,
+    required this.isDownloadLoading,
   });
 
   final Widget edit;
   final Widget download;
   final Widget info;
+  final bool isDownloadLoading;
   final void Function() editPressed;
   final void Function() downloadPressed;
   final void Function() infoPressed;
@@ -47,7 +50,7 @@ class FloatingButtons extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
           ),
           onTap: downloadPressed,
-          child: download,
+          child: isDownloadLoading ? FBALoader() : download,
         ),
         SpeedDialChild(
           backgroundColor: Colors.white,

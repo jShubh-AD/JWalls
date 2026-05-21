@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
 import 'package:walpy/app/core/utils/const/app_const.dart';
@@ -37,8 +35,8 @@ class _ViewImageState extends State<ViewImage> {
   @override
   void initState() {
     super.initState();
-    final likeNow = favo.contains(widget.wallInfo.id ?? "");
-    setState(() => isLike = likeNow);
+    // final likeNow = favo.contains(widget.wallInfo.id ?? "");
+    // setState(() => isLike = likeNow);
 
     ImageProvider fullImage;
     if (widget.wallInfo.urls?.full != null) {
@@ -102,6 +100,7 @@ class _ViewImageState extends State<ViewImage> {
               ),
               AppConst.sizedBoxH10,
 
+              // Like FBA
               FloatingActionButton(
                 heroTag: null,
                 splashColor: Colors.transparent,
@@ -111,7 +110,9 @@ class _ViewImageState extends State<ViewImage> {
                   late FavModel favM;
                   if (widget.wallInfo.urls?.full != null &&
                       widget.wallInfo.urls!.full!.isNotEmpty) {
-                    final bytes = AppHelpers.getImageBytes(widget.wallInfo.urls!.full!);
+                    final bytes = AppHelpers.urlToBytes(
+                      widget.wallInfo.urls!.full!,
+                    );
                     favM = FavModel(
                       id: widget.wallInfo.id ?? "",
                       bytes: await bytes,
@@ -167,19 +168,18 @@ class _ViewImageState extends State<ViewImage> {
 
               ///  Speed dial FAB(edit,download,info):
               FloatingButtons(
-                // edit -----------
                 edit: Icon(Icons.edit, color: Colors.black),
                 editPressed: () => context.read<ViewImageBloc>().add(EditingWall()),
-                // download -----------
+
                 download: Icon(Icons.download, color: Colors.black),
-                downloadPressed: () {
-                  // (blurValue > 0)
-                  //     ? downloadEditedToGallery()
-                  //     : (widget.wallInfo.urls?.full?.isNotEmpty ?? false)
-                  //     ? downloadToGallery(widget.wallInfo.urls?.full, null)
-                  //     : downloadToGallery(null, widget.imageBytes!);
-                },
-                // info ---------
+                isDownloadLoading: state.isDownloading,
+                downloadPressed: () => context.read<ViewImageBloc>().add(
+                  DownloadWall(
+                    boundaryKey: _previewController,
+                    url: widget.wallInfo.urls?.full,
+                    bytes: widget.imageBytes,
+                  )),
+
                 info: Icon(Icons.info_outline, color: Colors.black),
                 infoPressed: () {},
               ),
@@ -237,7 +237,10 @@ class _ViewImageState extends State<ViewImage> {
                 if (state.blur == 0.0) return const SizedBox.shrink();
                 return Positioned.fill(
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: state.blur, sigmaY: state.blur),
+                    filter: ImageFilter.blur(
+                      sigmaX: state.blur,
+                      sigmaY: state.blur,
+                    ),
                     child: Container(),
                   ),
                 );
@@ -248,7 +251,8 @@ class _ViewImageState extends State<ViewImage> {
               buildWhen: (prev, curr) => prev.editStatus != curr.editStatus,
               builder: (context, state) {
                 print(("slider rebuild"));
-                if (state.editStatus != EditStatus.editing ) return const SizedBox.shrink();
+                if (state.editStatus != EditStatus.editing)
+                  return const SizedBox.shrink();
                 return Positioned(
                   bottom: 80,
                   left: 0,
@@ -263,64 +267,64 @@ class _ViewImageState extends State<ViewImage> {
     );
   }
 
-  Future<Uint8List?>? captureBlurredImage() async {
-    try {
-      RenderRepaintBoundary boundary =
-          _previewController.currentContext!.findRenderObject()
-              as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 3);
-      final byteData = await image.toByteData(format: ImageByteFormat.png);
-      return byteData?.buffer.asUint8List();
-    } catch (e) {
-      // print("Error capturing the wall: $e");
-      return null;
-    }
-  }
+  // Future<Uint8List?>? captureBlurredImage() async {
+  //   try {
+  //     RenderRepaintBoundary boundary =
+  //         _previewController.currentContext!.findRenderObject()
+  //             as RenderRepaintBoundary;
+  //     final image = await boundary.toImage(pixelRatio: 3);
+  //     final byteData = await image.toByteData(format: ImageByteFormat.png);
+  //     return byteData?.buffer.asUint8List();
+  //   } catch (e) {
+  //     // print("Error capturing the wall: $e");
+  //     return null;
+  //   }
+  // }
 
   /// -------------------------------------------------DOWNLOADS WALLS -------------------------------------------------------------------
   /// Logic to download personalised image
 
-  Future<void> downloadEditedToGallery() async {
-    final bytes = await captureBlurredImage();
-    if (bytes == null) return;
-
-    final result = await ImageGallerySaverPlus.saveImage(
-      bytes,
-      quality: 100,
-      name: 'JWalls_Edited_${DateTime.now().millisecondsSinceEpoch}',
-    );
-
-    if (result['isSuccess']) {
-      // todo: show snack bar for edit saved in gallery
-    } else {
-      // todo: show snack bar for not saving edit in gallery
-    }
-  }
-
-  /// Download logic for non-personalised image in pictures
-
-  Future<void> downloadToGallery(String? imageUrl, Uint8List? imgBytes) async {
-    final permission = await Permission.storage.request();
-    if (!permission.isGranted && permission != permission.isLimited) {
-      // todo: show snack bar permission denied
-      return;
-    }
-    try {
-      late Uint8List? bytes;
-      // Save to gallery
-      (imageUrl?.isNotEmpty ?? false)
-          ? bytes = await AppHelpers.getImageBytes(imageUrl!)
-          : bytes = imgBytes;
-      final results = ImageGallerySaverPlus.saveImage(
-        bytes!,
-        quality: 100,
-        name:
-            "JWalls_here_"
-            '${DateTime.now().millisecondsSinceEpoch}',
-      );
-      // todo: show snack bar image saved
-    } catch (e) {
-      // todo: show snack bar of error
-    }
-  }
+  // Future<void> downloadEditedToGallery() async {
+  //   final bytes = await captureBlurredImage();
+  //   if (bytes == null) return;
+  //
+  //   final result = await ImageGallerySaverPlus.saveImage(
+  //     bytes,
+  //     quality: 100,
+  //     name: 'JWalls_Edited_${DateTime.now().millisecondsSinceEpoch}',
+  //   );
+  //
+  //   if (result['isSuccess']) {
+  //     // todo: show snack bar for edit saved in gallery
+  //   } else {
+  //     // todo: show snack bar for not saving edit in gallery
+  //   }
+  // }
+  //
+  // /// Download logic for non-personalised image in pictures
+  //
+  // Future<void> downloadToGallery(String? imageUrl, Uint8List? imgBytes) async {
+  //   final permission = await Permission.storage.request();
+  //   if (!permission.isGranted && permission != permission.isLimited) {
+  //     // todo: show snack bar permission denied
+  //     return;
+  //   }
+  //   try {
+  //     late Uint8List? bytes;
+  //     // Save to gallery
+  //     (imageUrl?.isNotEmpty ?? false)
+  //         ? bytes = await AppHelpers.getImageBytes(imageUrl!)
+  //         : bytes = imgBytes;
+  //     final results = ImageGallerySaverPlus.saveImage(
+  //       bytes!,
+  //       quality: 100,
+  //       name:
+  //           "JWalls_here_"
+  //           '${DateTime.now().millisecondsSinceEpoch}',
+  //     );
+  //     // todo: show snack bar image saved
+  //   } catch (e) {
+  //     // todo: show snack bar of error
+  //   }
+  // }
 }

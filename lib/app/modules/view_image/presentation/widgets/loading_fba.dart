@@ -22,15 +22,24 @@ class LoadingFAB extends StatelessWidget {
       ),
       onPressed: loading ? null : onPressed,
       child: loading
-          ? const SizedBox(
-        height: 22,
-        width: 22,
-        child: CircularProgressIndicator(
-          color: Colors.black,
-          strokeWidth: 2.5,
-        ),
-      )
+          ? FBALoader()
           : child,
+    );
+  }
+}
+
+class FBALoader extends StatelessWidget {
+  const FBALoader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      height: 22,
+      width: 22,
+      child: CircularProgressIndicator(
+        color: Colors.black,
+        strokeWidth: 2.5,
+      ),
     );
   }
 }

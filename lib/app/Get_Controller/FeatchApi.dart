@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:walpy/app/core/network/dio_client.dart';
@@ -8,12 +7,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import '../UI/settings.dart';
-import '../UI/gallery_page.dart';
 import '../core/network/api_const.dart';
-import '../modules/fav/view/fav.dart';
-import '../modules/home/presentation/view/home.dart';
 
 class ApiCall extends GetxController {
   final RxList<Wallpaper> photos = <Wallpaper>[].obs;
@@ -22,7 +16,6 @@ class ApiCall extends GetxController {
 
   Rx<bool> isLoading = true.obs;
   Rx<bool> isOnline = false.obs;
-  // Rx<bool> isPagination = false.obs;
   Rx<bool> isSearchLoading = false.obs;
   Rx<bool> noImageFound = false.obs;
   Rx<bool> hasMore = true.obs;
@@ -31,34 +24,10 @@ class ApiCall extends GetxController {
 
   StreamSubscription? _isOnInternet;
   final TextEditingController searchController = TextEditingController();
-  // RxInt selectedIndex = 0.obs;
-
-  // final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
-  //   4,
-  //   (index) => GlobalKey<NavigatorState>(),
-  // );
-
-  // final List<Widget> pages = [
-  //   const Homepage(),
-  //   const GalleryPage(),
-  //   const FavPage(),
-  //   Settings(),
-  // ];
-
   @override
   void onInit() {
     super.onInit();
-    // fetchHomeWalls();
-    _isOnInternet = InternetConnection().onStatusChange.listen((event) {
-      if (event == InternetStatus.connected) {
-        isOnline.value = true;
-        if (photos.isEmpty && !isLoading.value) {
-          // fetchHomeWalls();
-        }
-      } else {
-        isOnline.value = false;
-      }
-    });
+    isOnline.value = false;
   }
 
   @override

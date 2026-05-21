@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -64,8 +63,6 @@ class _ViewImageState extends State<ViewImage> {
   late ImageProvider currentImageProvider = CachedNetworkImageProvider(
     widget.wallInfo.urls?.small ?? "",
   );
-  bool isEdit = false;
-  double blurValue = 0;
   bool isLike = false;
 
   @override
@@ -177,11 +174,11 @@ class _ViewImageState extends State<ViewImage> {
                 // download -----------
                 download: Icon(Icons.download, color: Colors.black),
                 downloadPressed: () {
-                  (blurValue > 0)
-                      ? downloadEditedToGallery()
-                      : (widget.wallInfo.urls?.full?.isNotEmpty ?? false)
-                      ? downloadToGallery(widget.wallInfo.urls?.full, null)
-                      : downloadToGallery(null, widget.imageBytes!);
+                  // (blurValue > 0)
+                  //     ? downloadEditedToGallery()
+                  //     : (widget.wallInfo.urls?.full?.isNotEmpty ?? false)
+                  //     ? downloadToGallery(widget.wallInfo.urls?.full, null)
+                  //     : downloadToGallery(null, widget.imageBytes!);
                 },
                 // info ---------
                 info: Icon(Icons.info_outline, color: Colors.black),
@@ -336,41 +333,4 @@ class _ViewImageState extends State<ViewImage> {
       // todo: show snack bar of error
     }
   }
-
-
-// /// Logic for getting Unit8List(image bytes) from Url
-//
-// Future<Uint8List> urlToUnit8(String url) async {
-//   final file = await DefaultCacheManager().getSingleFile(url);
-//   final imageBytes = await file.readAsBytes();
-//   return imageBytes;
-// }
-  // Future<void> setEditedWall(GlobalKey boundaryKey) async {
-  //   // 1️⃣ Grab the RenderRepaintBoundary
-  //   final boundary =
-  //       boundaryKey.currentContext?.findRenderObject()
-  //           as RenderRepaintBoundary?;
-  //   if (boundary == null) {
-  //     // todo: show snack bar for not capturing edit
-  //     return;
-  //   }
-  //   // 2️⃣ Capture an image at high resolution (adjust ratio if needed)
-  //   final ui.Image uiImage = await boundary.toImage(pixelRatio: 3.0);
-  //   final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
-  //   final bytes = byteData!.buffer.asUint8List();
-  //
-  //   // 3️⃣ Save PNG to a temp file
-  //   final tempDir = await getTemporaryDirectory();
-  //   final filePath =
-  //       '${tempDir.path}/JWalls_edited_${DateTime.now().millisecondsSinceEpoch}.jpg';
-  //   final file = File(filePath);
-  //   await file.writeAsBytes(bytes);
-  //
-  //   // 4️⃣ Set as wallpaper (both screens)
-  //   final ok = await WallpaperManagerFlutter().setWallpaper(
-  //     file,
-  //     WallpaperManagerFlutter.bothScreens,
-  //   );
-  //   await file.delete();
-  // }
 }

@@ -133,7 +133,6 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<HomeBloc>(create: (context) => HomeBloc(HomeUseCase())),
-        BlocProvider<ViewImageBloc>(create: (context) => ViewImageBloc()),
       ],
       child: MaterialApp.router(
 

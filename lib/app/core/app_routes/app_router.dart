@@ -1,3 +1,4 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walpy/app/UI/portfolio.dart';
 import 'package:walpy/app/UI/search.dart';
@@ -9,6 +10,7 @@ import 'package:walpy/app/modules/home/presentation/view/dashboard.dart';
 import 'package:walpy/app/modules/home/presentation/view/home.dart';
 import 'package:walpy/app/modules/splash.dart';
 
+import '../../modules/view_image/bloc/view_image_bloc.dart';
 import '../../modules/view_image/presentation/pages/view_image_args.dart';
 
 final appRouter = GoRouter(
@@ -49,7 +51,10 @@ final appRouter = GoRouter(
       path: '/view_image',
       builder: (context, state) {
         final args = state.extra as ViewImageArgs;
-        return ViewImage(wallInfo: args.wallInfo, imageBytes: args.imageBytes);
+        return BlocProvider(
+          create: (_) => ViewImageBloc(),
+          child: ViewImage(wallInfo: args.wallInfo, imageBytes: args.imageBytes),
+        );
       },
     ),
     GoRoute(

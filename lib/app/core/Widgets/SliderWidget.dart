@@ -1,31 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:walpy/app/core/utils/const/app_const.dart';
+import 'package:walpy/app/modules/view_image/bloc/view_image_bloc.dart';
 
 class BlurSliderWidget extends StatelessWidget {
-  final double value;
-  final double min;
-  final double max;
-  final int? divisions;
-  final void Function() checkPressed;
-  final void Function() closePressed;
-  final ValueChanged<double> onChanged;
-
-  const BlurSliderWidget({
-    Key? key,
-    required this.checkPressed,
-    required this.closePressed,
-    required this.value,
-    required this.onChanged,
-    this.min = 0,
-    this.max = 10,
-    this.divisions,
-  }) : super(key: key);
+  const BlurSliderWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 6,
-      color: Colors.black.withOpacity(0.6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.black87,
+      shape: AppConst.recBorderRadius24,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -36,12 +22,11 @@ class BlurSliderWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                    onTap: closePressed,
-                    child: Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    )
+                  onTap: () =>
+                      context.read<ViewImageBloc>().add(EditingWallCancel()),
+                  child: Icon(Icons.close, color: Colors.white),
                 ),
+
                 const Text(
                   'Blur',
                   style: TextStyle(
@@ -50,23 +35,32 @@ class BlurSliderWidget extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+
                 GestureDetector(
-                    onTap: checkPressed,
-                    child: Icon(
-                      Icons.check,
-                      color: Colors.white,
-                    )
-                )
+                  onTap: () =>
+                      context.read<ViewImageBloc>().add(EditingWallDone()),
+                  child: Icon(Icons.check, color: Colors.white),
+                ),
               ],
             ),
-            Slider(
-              value: value,
-              onChanged: onChanged,
-              min: min,
-              max: max,
-              divisions: divisions,
-              activeColor: Colors.white,
-              inactiveColor: Colors.white24,
+            BlocBuilder<ViewImageBloc, ViewImageState>(
+              builder: (context, state) {
+                final blur = switch (state) {
+                  EditingWallState(:final blur) => blur,
+                  EditingWallDoneState(:final blur) => blur,
+                  _ => 0.0
+                };
+                return Slider(
+                  value: blur,
+                  onChanged: (v) => context.read<ViewImageBloc>().add(
+                    EditWallBlurChanged(blur: v),
+                  ),
+                  min: 0,
+                  max: 10,
+                  activeColor: Colors.white,
+                  inactiveColor: Colors.white24,
+                );
+              },
             ),
           ],
         ),

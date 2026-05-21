@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:ui' as ui;
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,13 +16,15 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
   ViewImageBloc() : super(ViewImageInitial()) {
     on<ViewImageSetWall>(viewImageSetWall);
     on<ViewImageLikeWall>(viewImageLikeWall);
+
+    // edit events
+    on<EditingWall>(editingWall);
+    on<EditWallBlurChanged>(editingWallBlurChanged);
+    on<EditingWallCancel>(editingWallCancel);
+    on<EditingWallDone>(editingWallDone);
   }
 
-  Future<void> viewImageSetWall(
-    ViewImageSetWall event,
-    Emitter<ViewImageState> emit,
-  ) async {
-    print("lala set krre vibe");
+  Future<void> viewImageSetWall(ViewImageSetWall event, Emitter<ViewImageState> emit,) async {
     emit(ViewImageSetWallState());
     try {
       final boundary =
@@ -79,4 +80,27 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
     ViewImageEvent event,
     Emitter<ViewImageState> emit,
   ) async {}
+
+  Future<void> editingWall(EditingWall event, Emitter<ViewImageState> emit) async {
+    final blur = state is EditingWallDoneState
+        ? (state as EditingWallDoneState).blur
+        : 0.0;
+    emit(EditingWallState(blur: blur));
+  }
+
+  Future<void> editingWallBlurChanged(EditWallBlurChanged event, Emitter<ViewImageState> emit) async {
+    emit(EditingWallState(blur: event.blur));
+  }
+
+  Future<void> editingWallCancel(EditingWallCancel event, Emitter<ViewImageState> emit) async {
+    emit(ViewImageInitial());
+  }
+
+  Future<void> editingWallDone(EditingWallDone event, Emitter<ViewImageState> emit) async {
+    final blur = state is EditingWallState
+        ? (state as EditingWallState).blur
+        : 0.0;
+    emit(EditingWallDoneState(blur: blur));
+    // throw some error like like save or no changes made or just rest blur
+  }
 }

@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
 import 'package:walpy/app/core/utils/const/app_const.dart';
+import 'package:walpy/app/core/utils/helpers/app_helpers.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/view_image/bloc/view_image_bloc.dart';
 import 'package:walpy/app/modules/view_image/presentation/widgets/loading_fba.dart';
@@ -66,18 +67,15 @@ class _ViewImageState extends State<ViewImage> {
   bool isEdit = false;
   double blurValue = 0;
   bool isLike = false;
-  bool _isSettingWall = false;
 
   @override
   Widget build(BuildContext context) {
-    print(widget.wallInfo.id);
+    print("rebuild");
     return Scaffold(
       extendBodyBehindAppBar: true,
       floatingActionButton: BlocConsumer<ViewImageBloc, ViewImageState>(
         listener: (context, state) {
-          final messenger = ScaffoldMessenger.of(context);
-
-          if(state is SetWallResultState){
+          if (state is SetWallResultState) {
             AppSnackBar.show(
               context,
               title: state.title,
@@ -87,7 +85,7 @@ class _ViewImageState extends State<ViewImage> {
           }
         },
         builder: (context, state) {
-          if (state is EditWallState) {
+          if (state is EditingWallState) {
             return SizedBox.shrink();
           }
           final isLoadingSet = state is ViewImageSetWallState;
@@ -95,7 +93,6 @@ class _ViewImageState extends State<ViewImage> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-
               LoadingFAB(
                 loading: isLoadingSet,
                 child: const Icon(
@@ -118,7 +115,7 @@ class _ViewImageState extends State<ViewImage> {
                   late FavModel favM;
                   if (widget.wallInfo.urls?.full != null &&
                       widget.wallInfo.urls!.full!.isNotEmpty) {
-                    final bytes = urlToUnit8(widget.wallInfo.urls!.full!);
+                    final bytes = AppHelpers.getImageBytes(widget.wallInfo.urls!.full!);
                     favM = FavModel(
                       id: widget.wallInfo.id ?? "",
                       bytes: await bytes,
@@ -132,10 +129,10 @@ class _ViewImageState extends State<ViewImage> {
                     );
                   }
                   bool like = await favo.toggle(favM);
-                  print('before setState isLike: $isLike');
+                  // print('before setState isLike: $isLike');
                   setState(() {
                     isLike = like;
-                    print('after setstate isLike:$isLike');
+                    // print('after setstate isLike:$isLike');
                   });
                 },
                 child: Icon(
@@ -176,11 +173,7 @@ class _ViewImageState extends State<ViewImage> {
               FloatingButtons(
                 // edit -----------
                 edit: Icon(Icons.edit, color: Colors.black),
-                editPressed: () {
-                  setState(() {
-                    isEdit = !isEdit;
-                  });
-                },
+                editPressed: () => context.read<ViewImageBloc>().add(EditingWall()),
                 // download -----------
                 download: Icon(Icons.download, color: Colors.black),
                 downloadPressed: () {
@@ -241,35 +234,42 @@ class _ViewImageState extends State<ViewImage> {
               },
             ),
 
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blurValue, sigmaY: blurValue),
-                child: Container(),
-              ),
+            BlocBuilder<ViewImageBloc, ViewImageState>(
+              buildWhen: (prev, curr) {
+                final prevBlur = prev is EditingWallState ? prev.blur
+                    : prev is EditingWallDoneState ? prev.blur : 0.0;
+                final currBlur = curr is EditingWallState ? curr.blur
+                    : curr is EditingWallDoneState ? curr.blur : 0.0;
+                return prevBlur != currBlur;
+              },
+              builder: (context, state) {
+                print(("filter rebuild"));
+                final blur = state is EditingWallState ? state.blur
+                    : state is EditingWallDoneState ? state.blur : 0.0;
+                if (blur == 0.0) return const SizedBox.shrink();
+                return Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                    child: Container(),
+                  ),
+                );
+              },
             ),
 
-            // Show blur slider
-            if (isEdit)
-              Positioned(
-                bottom: 80,
-                left: 0,
-                right: 0,
-                child: BlurSliderWidget(
-                  checkPressed: () {
-                    setState(() => isEdit = false);
-                  },
-                  closePressed: () {
-                    setState(() {
-                      blurValue = 0.0;
-                      isEdit = false;
-                    });
-                  },
-                  value: blurValue,
-                  onChanged: (val) {
-                    setState(() => blurValue = val);
-                  },
-                ),
-              ),
+            BlocBuilder<ViewImageBloc, ViewImageState>(
+              buildWhen: (prev, curr) =>
+              (prev is EditingWallState) != (curr is EditingWallState),
+              builder: (context, state) {
+                print(("slider rebuild"));
+                if (state is! EditingWallState) return const SizedBox.shrink();
+                return Positioned(
+                  bottom: 80,
+                  left: 0,
+                  right: 0,
+                  child: BlurSliderWidget(),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -285,7 +285,7 @@ class _ViewImageState extends State<ViewImage> {
       final byteData = await image.toByteData(format: ImageByteFormat.png);
       return byteData?.buffer.asUint8List();
     } catch (e) {
-      print("Error capturing the wall: $e");
+      // print("Error capturing the wall: $e");
       return null;
     }
   }
@@ -310,14 +310,6 @@ class _ViewImageState extends State<ViewImage> {
     }
   }
 
-  /// Logic for getting Unit8List(image bytes) from Url
-
-  Future<Uint8List> urlToUnit8(String url) async {
-    final file = await DefaultCacheManager().getSingleFile(url);
-    final imageBytes = await file.readAsBytes();
-    return imageBytes;
-  }
-
   /// Download logic for non-personalised image in pictures
 
   Future<void> downloadToGallery(String? imageUrl, Uint8List? imgBytes) async {
@@ -330,7 +322,7 @@ class _ViewImageState extends State<ViewImage> {
       late Uint8List? bytes;
       // Save to gallery
       (imageUrl?.isNotEmpty ?? false)
-          ? bytes = await urlToUnit8(imageUrl!)
+          ? bytes = await AppHelpers.getImageBytes(imageUrl!)
           : bytes = imgBytes;
       final results = ImageGallerySaverPlus.saveImage(
         bytes!,
@@ -345,10 +337,14 @@ class _ViewImageState extends State<ViewImage> {
     }
   }
 
-  /// -------------------------------------------------SET WALLS -------------------------------------------------------------------
 
-  /// ================= SET WALLPAPER ==============
-
+// /// Logic for getting Unit8List(image bytes) from Url
+//
+// Future<Uint8List> urlToUnit8(String url) async {
+//   final file = await DefaultCacheManager().getSingleFile(url);
+//   final imageBytes = await file.readAsBytes();
+//   return imageBytes;
+// }
   // Future<void> setEditedWall(GlobalKey boundaryKey) async {
   //   // 1️⃣ Grab the RenderRepaintBoundary
   //   final boundary =

@@ -24,4 +24,17 @@ final class LikeWallState extends ViewImageState{}
 
 final class DownloadWallState extends ViewImageState{}
 
-final class EditWallState extends ViewImageState{}
+final class EditingWallState extends ViewImageState{
+  final double blur;
+  const EditingWallState({this.blur = 0.0});
+  @override
+  List<Object> get props => [blur];
+}
+
+final class EditingWallDoneState extends ViewImageState{
+  final double blur;
+  const EditingWallDoneState({required this.blur});
+  @override
+  List<Object> get props => [blur];
+}
+

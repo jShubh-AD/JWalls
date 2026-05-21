@@ -19,5 +19,19 @@ class ViewImageLikeWall extends ViewImageEvent{}
 
 class ViewImageDownloadWall extends ViewImageEvent{}
 
-class ViewImageEditWall extends ViewImageEvent{}
+class EditingWall extends ViewImageEvent{}
+
+class EditWallBlurChanged extends ViewImageEvent{
+  final double blur;
+  const EditWallBlurChanged({required this.blur});
+  @override
+  List<Object> get props => [blur];
+}
+
+class EditingWallCancel extends ViewImageEvent{}
+
+class EditingWallDone extends ViewImageEvent{}
+
+
+
 

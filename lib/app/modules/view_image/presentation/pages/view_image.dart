@@ -12,6 +12,7 @@ import 'package:walpy/app/modules/favourite/data/favourite_model.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/view_image/bloc/view_image_bloc.dart';
 import 'package:walpy/app/modules/view_image/presentation/widgets/loading_fba.dart';
+import '../../../../core/utils/helpers/app_helpers.dart';
 import '../../../../core/Widgets/FloatingButtons.dart';
 import '../../../../core/Widgets/SliderWidget.dart';
 import '../../../../core/Widgets/app_snackbar.dart';
@@ -30,8 +31,13 @@ class ViewImage extends StatefulWidget {
 
 class _ViewImageState extends State<ViewImage> {
   String? get _id => widget.wallInfo?.id ?? widget.favouriteWall?.id;
-  String? get _fullUrl =>
-      widget.wallInfo?.urls?.full ?? widget.favouriteWall?.urls?.full;
+  String? get _fullUrl {
+    final originalUrl =
+        widget.wallInfo?.urls?.full ?? widget.favouriteWall?.urls?.full;
+    if (originalUrl == null) return null;
+    return AppHelpers.optimizeUnsplashUrl(originalUrl);
+  }
+
   String? get _smallUrl =>
       widget.wallInfo?.urls?.small ?? widget.favouriteWall?.urls?.small;
   String? get _profileImageLarge =>
@@ -54,7 +60,7 @@ class _ViewImageState extends State<ViewImage> {
     if (localFile != null) {
       // Instantly load the cached small preview image
       currentImageProvider = CachedNetworkImageProvider(_smallUrl ?? "");
-      
+
       // Resolve the high-res local image in the background
       final fullImage = FileImage(localFile);
       fullImage
@@ -160,7 +166,8 @@ class _ViewImageState extends State<ViewImage> {
                       state is FavouriteLoaded &&
                       state.favourites.any((f) => f.id == _id);
                   final isLiking =
-                      state is FavouriteLoaded && state.togglingFavIds.contains(_id);
+                      state is FavouriteLoaded &&
+                      state.togglingFavIds.contains(_id);
 
                   return LoadingFAB(
                     loading: isLiking,

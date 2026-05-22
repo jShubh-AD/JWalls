@@ -32,7 +32,8 @@ class Wall extends StatelessWidget {
                 ? state.favourites.any((f) => f.id == id)
                 : (favouriteWall != null);
 
-            final isToggling = state is FavouriteLoaded && state.togglingFavIds.contains(id);
+            final isToggling =
+                state is FavouriteLoaded && state.togglingFavIds.contains(id);
 
             // Resolve local path if liked
             String? localPath = favouriteWall?.imagePath;
@@ -64,7 +65,10 @@ class Wall extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) {
                             return CachedNetworkImage(
                               fadeInDuration: Duration.zero,
-                              imageUrl: wallInfo?.urls?.small ?? favouriteWall?.urls?.small ?? "",
+                              imageUrl:
+                                  wallInfo?.urls?.small ??
+                                  favouriteWall?.urls?.small ??
+                                  "",
                               fit: BoxFit.cover,
                               memCacheWidth: 350,
                               placeholder: (context, url) {
@@ -75,7 +79,10 @@ class Wall extends StatelessWidget {
                         )
                       : CachedNetworkImage(
                           fadeInDuration: Duration.zero,
-                          imageUrl: wallInfo?.urls?.small ?? favouriteWall?.urls?.small ?? "",
+                          imageUrl:
+                              wallInfo?.urls?.small ??
+                              favouriteWall?.urls?.small ??
+                              "",
                           fit: BoxFit.cover,
                           memCacheWidth: 350,
                           placeholder: (context, url) {
@@ -106,12 +113,18 @@ class Wall extends StatelessWidget {
                                 height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               )
                             : Icon(
-                                isLiked ? Icons.favorite : Icons.favorite_border,
-                                color: isLiked ? Colors.redAccent : Colors.white,
+                                isLiked
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: isLiked
+                                    ? Colors.redAccent
+                                    : Colors.white,
                                 size: 18,
                               ),
                       ),

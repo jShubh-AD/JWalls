@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -95,12 +96,12 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
         );
       } else {
         // like
-        final url =
+        final originalUrl =
             event.wall?.urls?.full ??
             event.wall?.urls?.regular ??
             event.favWall?.urls?.full ??
             event.favWall?.urls?.regular;
-        if (url == null) {
+        if (originalUrl == null) {
           final latestState = state;
           final latestFavourites =
               latestState is FavouriteLoaded ? latestState.favourites : initialFavourites;
@@ -118,6 +119,8 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
           );
           return;
         }
+
+        final url = AppHelpers.optimizeUnsplashUrl(originalUrl);
 
         final bytes = await AppHelpers.urlToBytes(url);
         final dirPath = _favouriteUseCase.getLikedFolderPath();

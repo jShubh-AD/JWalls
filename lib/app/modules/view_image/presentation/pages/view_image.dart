@@ -51,8 +51,28 @@ class _ViewImageState extends State<ViewImage> {
         ? File(localFav!.imagePath!)
         : null;
 
-    if (localFile != null && localFile.existsSync()) {
-      currentImageProvider = FileImage(localFile);
+    if (localFile != null) {
+      // Instantly load the cached small preview image
+      currentImageProvider = CachedNetworkImageProvider(_smallUrl ?? "");
+      
+      // Resolve the high-res local image in the background
+      final fullImage = FileImage(localFile);
+      fullImage
+          .resolve(const ImageConfiguration())
+          .addListener(
+            ImageStreamListener(
+              (_, __) {
+                if (mounted) {
+                  setState(() {
+                    currentImageProvider = fullImage;
+                  });
+                }
+              },
+              onError: (exception, stackTrace) {
+                debugPrint("Error loading local image: $exception");
+              },
+            ),
+          );
     } else {
       currentImageProvider = CachedNetworkImageProvider(_smallUrl ?? "");
       final fullImageUrl = _fullUrl;
@@ -61,13 +81,18 @@ class _ViewImageState extends State<ViewImage> {
         fullImage
             .resolve(const ImageConfiguration())
             .addListener(
-              ImageStreamListener((_, __) {
-                if (mounted) {
-                  setState(() {
-                    currentImageProvider = fullImage;
-                  });
-                }
-              }),
+              ImageStreamListener(
+                (_, __) {
+                  if (mounted) {
+                    setState(() {
+                      currentImageProvider = fullImage;
+                    });
+                  }
+                },
+                onError: (exception, stackTrace) {
+                  debugPrint("Error loading network image: $exception");
+                },
+              ),
             );
       }
     }

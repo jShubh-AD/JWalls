@@ -56,15 +56,28 @@ class Wall extends StatelessWidget {
                       ),
                     );
                   },
-                  child: localPath != null && File(localPath).existsSync()
+                  child: localPath != null
                       ? Image.file(
                           File(localPath),
                           fit: BoxFit.cover,
+                          cacheWidth: 350,
+                          errorBuilder: (context, error, stackTrace) {
+                            return CachedNetworkImage(
+                              fadeInDuration: Duration.zero,
+                              imageUrl: wallInfo?.urls?.small ?? favouriteWall?.urls?.small ?? "",
+                              fit: BoxFit.cover,
+                              memCacheWidth: 350,
+                              placeholder: (context, url) {
+                                return Container(color: Colors.grey.shade100);
+                              },
+                            );
+                          },
                         )
                       : CachedNetworkImage(
                           fadeInDuration: Duration.zero,
                           imageUrl: wallInfo?.urls?.small ?? favouriteWall?.urls?.small ?? "",
                           fit: BoxFit.cover,
+                          memCacheWidth: 350,
                           placeholder: (context, url) {
                             return Container(color: Colors.grey.shade100);
                           },

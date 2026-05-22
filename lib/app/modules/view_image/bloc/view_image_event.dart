@@ -8,7 +8,7 @@ sealed class ViewImageEvent extends Equatable {
 }
 
 // Set Wall Events
-class ViewImageSetWall extends ViewImageEvent{
+class ViewImageSetWall extends ViewImageEvent {
   final GlobalKey boundaryKey;
 
   const ViewImageSetWall(this.boundaryKey);
@@ -17,7 +17,7 @@ class ViewImageSetWall extends ViewImageEvent{
 }
 
 // Download Wall Events
-class DownloadWall extends ViewImageEvent{
+class DownloadWall extends ViewImageEvent {
   final GlobalKey boundaryKey;
   final String? url;
   final Uint8List? bytes;
@@ -27,20 +27,18 @@ class DownloadWall extends ViewImageEvent{
   List<Object?> get props => [boundaryKey, url, bytes];
 }
 
-// Edit Wall Events
-class EditingWall extends ViewImageEvent{}
+class ViewImageClearSnack extends ViewImageEvent {}
 
-class EditWallBlurChanged extends ViewImageEvent{
+// Edit Wall Events
+class EditingWall extends ViewImageEvent {}
+
+class EditWallBlurChanged extends ViewImageEvent {
   final double blur;
   const EditWallBlurChanged({required this.blur});
   @override
   List<Object> get props => [blur];
 }
 
-class EditingWallCancel extends ViewImageEvent{}
+class EditingWallCancel extends ViewImageEvent {}
 
-class EditingWallDone extends ViewImageEvent{}
-
-
-
-
+class EditingWallDone extends ViewImageEvent {}

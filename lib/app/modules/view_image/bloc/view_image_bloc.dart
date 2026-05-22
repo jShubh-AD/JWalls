@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,10 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
-import 'package:walpy/app/modules/favourite/data/favourite_model.dart';
-import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import '../../../core/utils/helpers/app_helpers.dart';
-import '../../favourite/data/local_datasource.dart';
 
 part 'view_image_event.dart';
 
@@ -26,6 +22,8 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
     // download wall events
     on<DownloadWall>(downloadWall);
 
+    on<ViewImageClearSnack>(viewImageClearSnack);
+
     // edit events
     on<EditingWall>(editingWall);
     on<EditWallBlurChanged>(editingWallBlurChanged);
@@ -34,26 +32,32 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
   }
 
   // Set Wall Event
-  Future<void> viewImageSetWall(ViewImageSetWall event, Emitter<ViewImageState> emit,) async {
+  Future<void> viewImageSetWall(
+    ViewImageSetWall event,
+    Emitter<ViewImageState> emit,
+  ) async {
     emit(
-        state.copyWith(
-          isSettingWall: true,
-          isError: false,
-          showSnack: false,
-          title: "",
-          message: ""
-        ));
+      state.copyWith(
+        isSettingWall: true,
+        isError: false,
+        showSnack: false,
+        title: "",
+        message: "",
+      ),
+    );
     try {
-      final boundary = event.boundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary =
+          event.boundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary == null) {
         emit(
-            state.copyWith(
-                isSettingWall: false,
-                isError: true,
-                showSnack: true,
-                title: "Error setting wall",
-                message: "Could not capture image, please try again"
-            )
+          state.copyWith(
+            isSettingWall: false,
+            isError: true,
+            showSnack: true,
+            title: "Error setting wall",
+            message: "Could not capture image, please try again",
+          ),
         );
         return;
       }
@@ -72,77 +76,85 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
       );
       if (ok)
         emit(
-            state.copyWith(
-                isSettingWall: false,
-                isError: false,
-                showSnack: true,
-                title: "Vibe Matched!",
-                message: "Wall set to match your vive."
-            )
+          state.copyWith(
+            isSettingWall: false,
+            isError: false,
+            showSnack: true,
+            title: "Vibe Matched!",
+            message: "Wall set to match your vive.",
+          ),
         );
       await file.delete();
     } catch (e, st) {
-      log(name: "Set Wall", "(viewImageSetWall)", error: e,stackTrace: st);
+      log(name: "Set Wall", "(viewImageSetWall)", error: e, stackTrace: st);
       emit(
-          state.copyWith(
-              isSettingWall: false,
-              isError: true,
-              showSnack: true,
-              title: "Couldn't match vibe!",
-              message: "Could not set Wall, please try again."
-          )
+        state.copyWith(
+          isSettingWall: false,
+          isError: true,
+          showSnack: true,
+          title: "Couldn't match vibe!",
+          message: "Could not set Wall, please try again.",
+        ),
       );
     }
   }
 
   // Download Wall Event
-  Future<void> downloadWall(DownloadWall event, Emitter<ViewImageState> emit) async {
-    if(state.editStatus == EditStatus.editing)return;
+  Future<void> downloadWall(
+    DownloadWall event,
+    Emitter<ViewImageState> emit,
+  ) async {
+    if (state.editStatus == EditStatus.editing) return;
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
-    if(!ps.isAuth){
-      emit(state.copyWith(
-        showSnack: true,
-        isDownloading: false,
-        isError: true,
-        title: "Permission Denied!",
-        message: "Provide access from settings before trying again."
-      ));
+    if (!ps.isAuth) {
+      emit(
+        state.copyWith(
+          showSnack: true,
+          isDownloading: false,
+          isError: true,
+          title: "Permission Denied!",
+          message: "Provide access from settings before trying again.",
+        ),
+      );
       return;
     }
-    try{
+    try {
       emit(state.copyWith(isDownloading: true));
       Uint8List bytes;
-      if(state.blur > 0){
-        final boundary = event.boundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (state.blur > 0) {
+        final boundary =
+            event.boundaryKey.currentContext?.findRenderObject()
+                as RenderRepaintBoundary?;
         if (boundary == null) {
           emit(
-              state.copyWith(
-                  isSettingWall: false,
-                  isDownloading: false,
-                  isError: true,
-                  showSnack: true,
-                  title: "Error setting wall",
-                  message: "Could not capture image, please try again"
-              )
+            state.copyWith(
+              isSettingWall: false,
+              isDownloading: false,
+              isError: true,
+              showSnack: true,
+              title: "Error setting wall",
+              message: "Could not capture image, please try again",
+            ),
           );
           return;
         }
         bytes = await AppHelpers.boundaryToBytes(boundary);
-      } else if(event.url != null){
+      } else if (event.url != null) {
         final url = event.url;
-        if(url == null) {
-          emit(state.copyWith(
+        if (url == null) {
+          emit(
+            state.copyWith(
               showSnack: true,
               isDownloading: false,
               isError: true,
               title: "Couldn't download wall",
-              message: "Could not download this wall, please try again."
-          ));
+              message: "Could not download this wall, please try again.",
+            ),
+          );
           return;
         }
         bytes = await AppHelpers.urlToBytes(url);
-      }
-      else{
+      } else {
         bytes = event.bytes!;
       }
       final AssetEntity? entity = await PhotoManager.editor.saveImage(
@@ -151,48 +163,79 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
         title: 'JWalls_${DateTime.now().millisecondsSinceEpoch}',
         desc: 'Saved by JWalls',
       );
-      if(entity != null){
-        emit(state.copyWith(
+      if (entity != null) {
+        emit(
+          state.copyWith(
             showSnack: true,
             isDownloading: false,
             isError: false,
             title: "Wall saved",
-            message: "This wall have been saved in your gallery."
-        ));
+            message: "This wall have been saved in your gallery.",
+          ),
+        );
       }
-    }catch(e, st){
-      emit(state.copyWith(
+    } catch (e, st) {
+      emit(
+        state.copyWith(
           showSnack: true,
           isError: true,
           isDownloading: false,
           title: "Couldn't download wall",
-          message: "Could not download this wall, please try again."
-      ));
+          message: "Could not download this wall, please try again.",
+        ),
+      );
       log(name: "Download", "", error: e, stackTrace: st);
     }
   }
 
   // Edit Wall Event
-  Future<void> editingWall(EditingWall event, Emitter<ViewImageState> emit) async {
-    if(state.editStatus == EditStatus.editing) return;
-    emit(state.copyWith(showSnack: false,editStatus: EditStatus.editing));
+  Future<void> editingWall(
+    EditingWall event,
+    Emitter<ViewImageState> emit,
+  ) async {
+    if (state.editStatus == EditStatus.editing) return;
+    emit(state.copyWith(showSnack: false, editStatus: EditStatus.editing));
   }
 
-  Future<void> editingWallBlurChanged(EditWallBlurChanged event, Emitter<ViewImageState> emit) async {
-    if(state.editStatus == EditStatus.editing){
-      emit(state.copyWith(showSnack: false,blur: event.blur));
+  Future<void> editingWallBlurChanged(
+    EditWallBlurChanged event,
+    Emitter<ViewImageState> emit,
+  ) async {
+    if (state.editStatus == EditStatus.editing) {
+      emit(state.copyWith(showSnack: false, blur: event.blur));
     }
   }
 
-  Future<void> editingWallCancel(EditingWallCancel event, Emitter<ViewImageState> emit) async {
-    if(state.editStatus == EditStatus.editing){
-      emit(state.copyWith(showSnack: false,blur: 0.0, editStatus: EditStatus.initial));
+  Future<void> editingWallCancel(
+    EditingWallCancel event,
+    Emitter<ViewImageState> emit,
+  ) async {
+    if (state.editStatus == EditStatus.editing) {
+      emit(
+        state.copyWith(
+          showSnack: false,
+          blur: 0.0,
+          editStatus: EditStatus.initial,
+        ),
+      );
     }
   }
 
-  Future<void> editingWallDone(EditingWallDone event, Emitter<ViewImageState> emit) async {
-    if(state.editStatus == EditStatus.editing){
-      emit(state.copyWith(showSnack: false,editStatus: EditStatus.done));
+  Future<void> editingWallDone(
+    EditingWallDone event,
+    Emitter<ViewImageState> emit,
+  ) async {
+    if (state.editStatus == EditStatus.editing) {
+      emit(state.copyWith(showSnack: false, editStatus: EditStatus.done));
+    }
+  }
+
+  Future<void> viewImageClearSnack(
+    ViewImageClearSnack event,
+    Emitter<ViewImageState> emit,
+  ) async {
+    if (state.showSnack) {
+      emit(state.copyWith(showSnack: false, title: "", message: ""));
     }
   }
 }

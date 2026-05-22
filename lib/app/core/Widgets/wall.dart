@@ -32,7 +32,7 @@ class Wall extends StatelessWidget {
                 ? state.favourites.any((f) => f.id == id)
                 : (favouriteWall != null);
 
-            final isToggling = state is FavouriteLoaded && state.togglingFavId == id;
+            final isToggling = state is FavouriteLoaded && state.togglingFavIds.contains(id);
 
             // Resolve local path if liked
             String? localPath = favouriteWall?.imagePath;

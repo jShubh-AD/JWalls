@@ -30,9 +30,13 @@ class ViewImage extends StatefulWidget {
 
 class _ViewImageState extends State<ViewImage> {
   String? get _id => widget.wallInfo?.id ?? widget.favouriteWall?.id;
-  String? get _fullUrl => widget.wallInfo?.urls?.full ?? widget.favouriteWall?.urls?.full;
-  String? get _smallUrl => widget.wallInfo?.urls?.small ?? widget.favouriteWall?.urls?.small;
-  String? get _profileImageLarge => widget.wallInfo?.user?.profileImage?.large ?? widget.favouriteWall?.user?.profileImage?.large;
+  String? get _fullUrl =>
+      widget.wallInfo?.urls?.full ?? widget.favouriteWall?.urls?.full;
+  String? get _smallUrl =>
+      widget.wallInfo?.urls?.small ?? widget.favouriteWall?.urls?.small;
+  String? get _profileImageLarge =>
+      widget.wallInfo?.user?.profileImage?.large ??
+      widget.favouriteWall?.user?.profileImage?.large;
   User? get _user => widget.wallInfo?.user ?? widget.favouriteWall?.user;
 
   late ImageProvider currentImageProvider;
@@ -43,7 +47,9 @@ class _ViewImageState extends State<ViewImage> {
     super.initState();
     final favId = _id ?? "";
     final localFav = LocalDatabase.instance.getFavourite(favId);
-    final localFile = localFav?.imagePath != null ? File(localFav!.imagePath!) : null;
+    final localFile = localFav?.imagePath != null
+        ? File(localFav!.imagePath!)
+        : null;
 
     if (localFile != null && localFile.existsSync()) {
       currentImageProvider = FileImage(localFile);
@@ -52,15 +58,17 @@ class _ViewImageState extends State<ViewImage> {
       final fullImageUrl = _fullUrl;
       if (fullImageUrl != null && fullImageUrl.isNotEmpty) {
         final fullImage = CachedNetworkImageProvider(fullImageUrl);
-        fullImage.resolve(const ImageConfiguration()).addListener(
-          ImageStreamListener((_, __) {
-            if (mounted) {
-              setState(() {
-                currentImageProvider = fullImage;
-              });
-            }
-          }),
-        );
+        fullImage
+            .resolve(const ImageConfiguration())
+            .addListener(
+              ImageStreamListener((_, __) {
+                if (mounted) {
+                  setState(() {
+                    currentImageProvider = fullImage;
+                  });
+                }
+              }),
+            );
       }
     }
   }
@@ -78,6 +86,7 @@ class _ViewImageState extends State<ViewImage> {
               message: state.message,
               isError: state.isError,
             );
+            context.read<ViewImageBloc>().add(ViewImageClearSnack());
           }
         },
         builder: (context, state) {
@@ -106,7 +115,8 @@ class _ViewImageState extends State<ViewImage> {
                 listenWhen: (prev, curr) =>
                     curr is FavouriteLoaded &&
                     curr.snackMessage != null &&
-                    (prev is! FavouriteLoaded || prev.snackMessage != curr.snackMessage),
+                    (prev is! FavouriteLoaded ||
+                        prev.snackMessage != curr.snackMessage),
                 listener: (context, state) {
                   if (state is FavouriteLoaded && state.snackMessage != null) {
                     AppSnackBar.show(
@@ -121,8 +131,11 @@ class _ViewImageState extends State<ViewImage> {
                 buildWhen: (prev, curr) =>
                     curr is FavouriteLoaded || prev is FavouriteLoaded,
                 builder: (context, state) {
-                  final isLiked = state is FavouriteLoaded && state.favourites.any((f) => f.id == _id);
-                  final isLiking = state is FavouriteLoaded && state.togglingFavId == _id;
+                  final isLiked =
+                      state is FavouriteLoaded &&
+                      state.favourites.any((f) => f.id == _id);
+                  final isLiking =
+                      state is FavouriteLoaded && state.togglingFavIds.contains(_id);
 
                   return LoadingFAB(
                     loading: isLiking,
@@ -152,14 +165,13 @@ class _ViewImageState extends State<ViewImage> {
                   child: CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.transparent,
-                    backgroundImage: CachedNetworkImageProvider(_profileImageLarge!),
+                    backgroundImage: CachedNetworkImageProvider(
+                      _profileImageLarge!,
+                    ),
                   ),
                   onPressed: () {
                     if (_user != null) {
-                      context.pushNamed(
-                        AppRoutes.portfolio,
-                        extra: _user,
-                      );
+                      context.pushNamed(AppRoutes.portfolio, extra: _user);
                     }
                   },
                 ),
@@ -175,10 +187,7 @@ class _ViewImageState extends State<ViewImage> {
                 download: const Icon(Icons.download, color: Colors.black),
                 isDownloadLoading: state.isDownloading,
                 downloadPressed: () => context.read<ViewImageBloc>().add(
-                  DownloadWall(
-                    boundaryKey: _previewController,
-                    url: _fullUrl,
-                  ),
+                  DownloadWall(boundaryKey: _previewController, url: _fullUrl),
                 ),
 
                 info: const Icon(Icons.info_outline, color: Colors.black),

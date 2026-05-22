@@ -45,22 +45,29 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
     ToggleLike event,
     Emitter<FavouriteState> emit,
   ) async {
-    final currentState = state;
-    final List<FavouriteModel> currentFavourites =
-        currentState is FavouriteLoaded ? currentState.favourites : [];
-
     final id = event.wall?.id ?? event.favWall?.id;
     if (id == null) return;
 
-    emit(FavouriteLoaded(favourites: currentFavourites, togglingFavId: id));
+    final currentState = state;
+    final List<FavouriteModel> initialFavourites =
+        currentState is FavouriteLoaded ? currentState.favourites : [];
+    final Set<String> initialToggling =
+        currentState is FavouriteLoaded ? currentState.togglingFavIds : const {};
+
+    final updatedToggling = Set<String>.from(initialToggling)..add(id);
+
+    emit(FavouriteLoaded(
+      favourites: initialFavourites,
+      togglingFavIds: updatedToggling,
+    ));
+
+    final existingIndex = initialFavourites.indexWhere((f) => f.id == id);
+    final isLiked = existingIndex != -1;
 
     try {
-      final existingIndex = currentFavourites.indexWhere((f) => f.id == id);
-      final isLiked = existingIndex != -1;
-
       if (isLiked) {
         // unlike
-        final favModel = currentFavourites[existingIndex];
+        final favModel = initialFavourites[existingIndex];
         if (favModel.imagePath != null) {
           final file = File(favModel.imagePath!);
           if (await file.exists()) {
@@ -69,12 +76,19 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
         }
         await _favouriteUseCase.removeFavourite(id);
 
-        final updatedList = List<FavouriteModel>.from(currentFavourites)
-          ..removeAt(existingIndex);
+        final latestState = state;
+        final latestFavourites =
+            latestState is FavouriteLoaded ? latestState.favourites : initialFavourites;
+        final latestToggling =
+            latestState is FavouriteLoaded ? latestState.togglingFavIds : updatedToggling;
+
+        final updatedList = latestFavourites.where((f) => f.id != id).toList();
+        final finalToggling = Set<String>.from(latestToggling)..remove(id);
 
         emit(
           FavouriteLoaded(
             favourites: updatedList,
+            togglingFavIds: finalToggling,
             snackMessage: "Wall removed from liked.",
             isErrorSnack: false,
           ),
@@ -87,9 +101,17 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
             event.favWall?.urls?.full ??
             event.favWall?.urls?.regular;
         if (url == null) {
+          final latestState = state;
+          final latestFavourites =
+              latestState is FavouriteLoaded ? latestState.favourites : initialFavourites;
+          final latestToggling =
+              latestState is FavouriteLoaded ? latestState.togglingFavIds : updatedToggling;
+
+          final finalToggling = Set<String>.from(latestToggling)..remove(id);
           emit(
             FavouriteLoaded(
-              favourites: currentFavourites,
+              favourites: latestFavourites,
+              togglingFavIds: finalToggling,
               snackMessage: "Could not save image, please try again",
               isErrorSnack: true,
             ),
@@ -112,11 +134,21 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
         );
         await _favouriteUseCase.addFavourite(fav);
 
-        final updatedList = [...currentFavourites, fav];
+        final latestState = state;
+        final latestFavourites =
+            latestState is FavouriteLoaded ? latestState.favourites : initialFavourites;
+        final latestToggling =
+            latestState is FavouriteLoaded ? latestState.togglingFavIds : updatedToggling;
+
+        final updatedList = latestFavourites.any((f) => f.id == id)
+            ? latestFavourites
+            : [...latestFavourites, fav];
+        final finalToggling = Set<String>.from(latestToggling)..remove(id);
 
         emit(
           FavouriteLoaded(
             favourites: updatedList,
+            togglingFavIds: finalToggling,
             snackMessage: "Wall added to liked.",
             isErrorSnack: false,
           ),
@@ -124,9 +156,17 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
       }
     } catch (e, st) {
       log("Error toggling favorite", error: e, stackTrace: st);
+      final latestState = state;
+      final latestFavourites =
+          latestState is FavouriteLoaded ? latestState.favourites : initialFavourites;
+      final latestToggling =
+          latestState is FavouriteLoaded ? latestState.togglingFavIds : updatedToggling;
+
+      final finalToggling = Set<String>.from(latestToggling)..remove(id);
       emit(
         FavouriteLoaded(
-          favourites: currentFavourites,
+          favourites: latestFavourites,
+          togglingFavIds: finalToggling,
           snackMessage: "Something went wrong, please try again",
           isErrorSnack: true,
         ),

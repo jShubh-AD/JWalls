@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:walpy/app/modules/favourite/presentation/pages/fav.dart';
 import '../../../../core/utils/const/app_const.dart';
 import 'home.dart';
 
@@ -92,10 +93,9 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 const Homepage(),
                 const Placeholder(),
-                const Placeholder(),
+                const FavouritePage(),
                 const Placeholder(),
                 // const GalleryPage(),
-                // const FavPage(),
                 // const Settings(),
               ]
           ),

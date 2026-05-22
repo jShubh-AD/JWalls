@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
+import 'package:walpy/app/modules/favourite/presentation/bloc/favourite_bloc.dart';
 
+import '../../../../core/Widgets/wall.dart';
+import '../../../../core/utils/const/app_const.dart';
 import '../../../view_image/presentation/pages/view_image.dart';
 import '../../data/local_datasource.dart';
+
 class FavouritePage extends StatefulWidget {
   const FavouritePage({super.key});
 
@@ -12,69 +17,51 @@ class FavouritePage extends StatefulWidget {
 }
 
 class _FavouritePageState extends State<FavouritePage> {
-  // final FavService favService = FavService();/
-
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: ValueNotifier(context) ,// favService.listenable,
-      builder: (context, box, _) {
-        // if (box.isEmpty) {
-        //   return Center(
-        //     child: const Text(
-        //       'No favourites yet.',
-        //       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        //     ),
-        //   );
-        // }
-        // final pics = box.values.toList();
-        return MasonryGridView.count(
-          crossAxisCount: 2,
-          itemCount: 0, //pics.length,
-          mainAxisSpacing: 5,
-          crossAxisSpacing: 5,
-          itemBuilder: (BuildContext context, int index) {
-            // final fav = pics[index];
-            double ht = index.isEven ? 200 : 250;
-            return Stack(
-              children: [
-                // InkWell(
-                //   // onTap: (){
-                //   //   Get.to(()=> ViewImage(
-                //   //       profileImage: fav.avtar,
-                //   //       imageBytes: fav.bytes,
-                //   //       id: fav.id
-                //   //   ),
-                //   //     transition: Transition.rightToLeft
-                //   //   );
-                //   // },
-                //   child: Container(
-                //     height: ht,
-                //     width: double.infinity,
-                //     decoration: BoxDecoration(
-                //       color: Colors.grey,
-                //       borderRadius: BorderRadius.circular(24),
-                //     ),
-                //     child: ClipRRect(
-                //       borderRadius: BorderRadius.circular(24),
-                //       child: Image.memory(fav.bytes, fit: BoxFit.cover),
-                //     ),
-                //   ),
-                // ),
-                Positioned(
-                  bottom: 10,
-                  right: 10,
-                  child: InkWell(
-                    // onTap: () async{
-                    //     favService.remove(fav.id);
-                    // },
-                    child: Icon(Icons.favorite, color: Colors.red, size: 26),
-                  ),
-                ),
-              ],
-            );
-          },
+    final darkMode = AppConst.isDarkMode(context);
+    return BlocBuilder<FavouriteBloc, FavouriteState>(
+      builder: (context, state) {
+        if(state.isLoading){
+          return Center(
+            child: CircularProgressIndicator(
+              color: darkMode ? Colors.white : Colors.black,
+            ),
+          );
+        }
+
+        return CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              sliver: SliverMasonryGrid.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: AppConst.yAxisSpacing,
+                crossAxisSpacing: AppConst.xAxisSpacing,
+                childCount: state.favourites.length,
+                itemBuilder: (context, index) {
+                  final walls = state.favourites;
+                  if(walls.isEmpty){
+                    return Text("No walls found");
+                  }
+                  return Wall(index, favouriteWall: walls[index]);
+                },
+              ),
+            ),
+          ],
         );
+        // return Stack(
+        //   children: [
+        //
+        //     Positioned(
+        //       bottom: 10,
+        //       right: 10,
+        //       child: InkWell(
+        //         child: Icon(Icons.favorite, color: Colors.red, size: 26),
+        //       ),
+        //     ),
+        //   ],
+        // );
       },
     );
   }

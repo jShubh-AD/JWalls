@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:walpy/app/core/app_errors/app_errors.dart';
 import 'package:walpy/app/core/network/dio_client.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 
@@ -13,7 +14,7 @@ class HomeDatasource {
       final response = await dio.performGet(url: url, params: params);
       return compute(heavyParsing, response.data);
     }catch(e) {
-      throw Exception(e);
+      throw AppException(e.toString());
     }
   }
 }

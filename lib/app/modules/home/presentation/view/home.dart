@@ -14,12 +14,7 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  // with AutomaticKeepAliveClientMixin { todo: don't remove this cmt maybe helpful for remembering scroll position
-  // final FavService favService = FavService();
   final _scrollController = ScrollController();
-
-  // @override
-  // bool get wantKeepAlive => true; todo: don't remove this cmt maybe helpful for remembering scroll position
 
   @override
   void initState() {
@@ -35,7 +30,6 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
-    // super.build(context); todo: don't remove this cmt maybe helpful for remembering scroll position
     final darkMode = AppConst.isDarkMode(context);
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
@@ -87,78 +81,6 @@ class _HomepageState extends State<Homepage> {
         return SizedBox.shrink();
       },
     );
-    // MasonryGridView.count(
-    //   //  controller: fetchWalls.scrollController,
-    //   itemCount: fetchWalls.photos.length,
-    //   // extra for loader
-    //   crossAxisCount: 2,
-    //   mainAxisSpacing: 8,
-    //   crossAxisSpacing: 8,
-    //
-    //   itemBuilder: (context, index) {
-    //     final wallpaper = fetchWalls.photos[index];
-    //     final url = wallpaper.urls!;
-    //     return Stack(
-    //       children: [
-    //         SizedBox(
-    //           width: double.infinity,
-    //           height: index.isEven ? 180 : 250,
-    //           child: ClipRRect(
-    //             borderRadius: AppConst.borderRadius10,
-    //             child: GestureDetector(
-    //               onTap: () {
-    //                 Get.to(
-    //                   () => ViewImage(
-    //                     hdImageUrl: url.full!,
-    //                     id: wallpaper.id!,
-    //                     profileImage: wallpaper.avatar!.medium,
-    //                     lowQualityImageUrl: url.small!,
-    //                     userName: wallpaper.userName,
-    //                     name: wallpaper.name,
-    //                   ),
-    //                   transition: Transition.rightToLeft,
-    //                 );
-    //               },
-    //               child: CachedNetworkImage(
-    //                 fadeInDuration: Duration.zero,
-    //                 imageUrl: url.small!,
-    //                 fit: BoxFit.cover,
-    //                 placeholder: (context, url) {
-    //                   return Container(color: Colors.grey.shade100);
-    //                 },
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //         Positioned(
-    //           bottom: 10,
-    //           right: 10,
-    //           child: ValueListenableBuilder<Box<FavModel>>(
-    //             valueListenable: favService.listenableFor(wallpaper.id!),
-    //             builder: (BuildContext context, value, Widget? child) {
-    //               final liked = favService.contains(wallpaper.id!);
-    //               return InkWell(
-    //                 onTap: () async => favService.toggle(
-    //                   FavModel(
-    //                     id: wallpaper.id!,
-    //                     bytes: await urltoUnit8(url.small!),
-    //                     avtar: wallpaper.avatar!.medium!,
-    //                   ),
-    //                 ),
-    //                 child: Icon(
-    //                   liked ? Icons.favorite : Icons.favorite_border,
-    //                   color: liked ? Colors.red : Colors.white,
-    //                   size: 25,
-    //                   weight: 0.1,
-    //                 ),
-    //               );
-    //             },
-    //           ),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // ).paddingSymmetric(horizontal: 5);
   }
 
   void _onScroll() {

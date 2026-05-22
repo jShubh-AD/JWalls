@@ -20,7 +20,7 @@ import '../../../favourite/presentation/bloc/favourite_bloc.dart';
 class ViewImage extends StatefulWidget {
   const ViewImage({super.key, this.favouriteWall, required this.wallInfo});
 
-  final Wallpaper wallInfo;
+  final Wallpaper? wallInfo;
   final FavouriteModel? favouriteWall;
 
   @override
@@ -31,12 +31,10 @@ class _ViewImageState extends State<ViewImage> {
   @override
   void initState() {
     super.initState();
-    context.read<FavouriteBloc>().add(
-      CheckIsLiked(widget.wallInfo.id ?? ""),
-    );
+    context.read<FavouriteBloc>().add(CheckIsLiked(widget.wallInfo?.id ?? ""));
     ImageProvider fullImage;
-    if (widget.wallInfo.urls?.full != null) {
-      fullImage = CachedNetworkImageProvider(widget.wallInfo.urls?.full ?? "");
+    if (widget.wallInfo?.urls?.full != null) {
+      fullImage = CachedNetworkImageProvider(widget.wallInfo?.urls?.full ?? "");
     } else {
       fullImage = CachedNetworkImageProvider(
         widget.favouriteWall?.urls?.full ?? "",
@@ -57,7 +55,7 @@ class _ViewImageState extends State<ViewImage> {
 
   final GlobalKey _previewController = GlobalKey();
   late ImageProvider currentImageProvider = CachedNetworkImageProvider(
-    widget.wallInfo.urls?.small ?? "",
+    widget.wallInfo?.urls?.small ?? "",
   );
 
   @override
@@ -98,7 +96,8 @@ class _ViewImageState extends State<ViewImage> {
 
               // Like FBA
               BlocConsumer<FavouriteBloc, FavouriteState>(
-                listenWhen: (prev, curr) => prev.showSnack != curr.showSnack && curr.showSnack,
+                listenWhen: (prev, curr) =>
+                    prev.showSnack != curr.showSnack && curr.showSnack,
                 listener: (context, state) => AppSnackBar.show(
                   context,
                   title: state.title,
@@ -106,14 +105,17 @@ class _ViewImageState extends State<ViewImage> {
                   isError: state.isError,
                 ),
                 buildWhen: (prev, curr) =>
-                prev.isLiked != curr.isLiked || prev.isLiking != curr.isLiking,
+                    prev.isLiked != curr.isLiked ||
+                    prev.isLiking != curr.isLiking,
                 builder: (context, state) => LoadingFAB(
                   loading: state.isLiking,
                   onPressed: () => context.read<FavouriteBloc>().add(
                     ToggleLike(
                       wall: state.isLiked ? null : widget.wallInfo,
                       favWall: state.isLiked
-                          ? LocalDatabase.instance.getFavourite(widget.wallInfo.id ?? "")
+                          ? LocalDatabase.instance.getFavourite(
+                              widget.wallInfo?.id ?? "",
+                            )
                           : null,
                     ),
                   ),
@@ -134,13 +136,15 @@ class _ViewImageState extends State<ViewImage> {
                   radius: 22,
                   backgroundColor: Colors.transparent,
                   backgroundImage: CachedNetworkImageProvider(
-                    widget.wallInfo.user?.profileImage?.large ?? "",
+                    widget.wallInfo?.user?.profileImage?.large ??
+                        widget.favouriteWall?.user?.profileImage?.large ??
+                        "",
                   ),
                 ),
                 onPressed: () {
                   context.pushNamed(
                     AppRoutes.portfolio,
-                    queryParameters: {"userName": widget.wallInfo.user},
+                    queryParameters: {"userName": widget.wallInfo?.user},
                   );
                 },
               ),
@@ -158,8 +162,7 @@ class _ViewImageState extends State<ViewImage> {
                 downloadPressed: () => context.read<ViewImageBloc>().add(
                   DownloadWall(
                     boundaryKey: _previewController,
-                    url: widget.wallInfo.urls?.full,
-                    // bytes: widget.favouriteWall,
+                    url: widget.wallInfo?.urls?.full,
                   ),
                 ),
 

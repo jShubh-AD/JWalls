@@ -1,48 +1,46 @@
-import 'dart:typed_data';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
 import 'package:walpy/app/core/utils/const/app_const.dart';
-import 'package:walpy/app/core/utils/helpers/app_helpers.dart';
+import 'package:walpy/app/modules/favourite/data/favourite_model.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/view_image/bloc/view_image_bloc.dart';
 import 'package:walpy/app/modules/view_image/presentation/widgets/loading_fba.dart';
 import '../../../../core/Widgets/FloatingButtons.dart';
 import '../../../../core/Widgets/SliderWidget.dart';
 import '../../../../core/Widgets/app_snackbar.dart';
-import '../../../fav/data/fav-model.dart';
-import '../../../fav/data/hive_service.dart';
+import '../../../favourite/data/local_datasource.dart';
+import '../../../favourite/presentation/bloc/favourite_bloc.dart';
 
 class ViewImage extends StatefulWidget {
-  const ViewImage({super.key, this.imageBytes, required this.wallInfo});
+  const ViewImage({super.key, this.favouriteWall, required this.wallInfo});
 
   final Wallpaper wallInfo;
-  final Uint8List? imageBytes;
+  final FavouriteModel? favouriteWall;
 
   @override
   State<ViewImage> createState() => _ViewImageState();
 }
 
 class _ViewImageState extends State<ViewImage> {
-  final FavService favo = FavService();
-
   @override
   void initState() {
     super.initState();
-    // final likeNow = favo.contains(widget.wallInfo.id ?? "");
-    // setState(() => isLike = likeNow);
-
+    context.read<FavouriteBloc>().add(
+      CheckIsLiked(widget.wallInfo.id ?? ""),
+    );
     ImageProvider fullImage;
     if (widget.wallInfo.urls?.full != null) {
       fullImage = CachedNetworkImageProvider(widget.wallInfo.urls?.full ?? "");
     } else {
-      fullImage = MemoryImage(widget.imageBytes!);
+      fullImage = CachedNetworkImageProvider(
+        widget.favouriteWall?.urls?.full ?? "",
+      );
     }
     fullImage
         .resolve(const ImageConfiguration())
@@ -61,11 +59,9 @@ class _ViewImageState extends State<ViewImage> {
   late ImageProvider currentImageProvider = CachedNetworkImageProvider(
     widget.wallInfo.urls?.small ?? "",
   );
-  bool isLike = false;
 
   @override
   Widget build(BuildContext context) {
-    print("rebuild");
     return Scaffold(
       extendBodyBehindAppBar: true,
       floatingActionButton: BlocConsumer<ViewImageBloc, ViewImageState>(
@@ -101,67 +97,52 @@ class _ViewImageState extends State<ViewImage> {
               AppConst.sizedBoxH10,
 
               // Like FBA
-              FloatingActionButton(
-                heroTag: null,
-                splashColor: Colors.transparent,
-                shape: AppConst.recBorderRadius24,
-                backgroundColor: Colors.white,
-                onPressed: () async {
-                  late FavModel favM;
-                  if (widget.wallInfo.urls?.full != null &&
-                      widget.wallInfo.urls!.full!.isNotEmpty) {
-                    final bytes = AppHelpers.urlToBytes(
-                      widget.wallInfo.urls!.full!,
-                    );
-                    favM = FavModel(
-                      id: widget.wallInfo.id ?? "",
-                      bytes: await bytes,
-                      avtar: widget.wallInfo.avatar?.large ?? "",
-                    );
-                  } else {
-                    favM = FavModel(
-                      id: widget.wallInfo.id ?? "",
-                      bytes: widget.imageBytes!,
-                      avtar: widget.wallInfo.avatar?.large ?? "",
-                    );
-                  }
-                  bool like = await favo.toggle(favM);
-                  // print('before setState isLike: $isLike');
-                  setState(() {
-                    isLike = like;
-                    // print('after setstate isLike:$isLike');
-                  });
-                },
-                child: Icon(
-                  isLike ? Icons.favorite : Icons.favorite_border,
-                  color: isLike ? Colors.red : Colors.black,
-                  size: isLike ? 30 : 25,
+              BlocConsumer<FavouriteBloc, FavouriteState>(
+                listenWhen: (prev, curr) => prev.showSnack != curr.showSnack && curr.showSnack,
+                listener: (context, state) => AppSnackBar.show(
+                  context,
+                  title: state.title,
+                  message: state.message,
+                  isError: state.isError,
+                ),
+                buildWhen: (prev, curr) =>
+                prev.isLiked != curr.isLiked || prev.isLiking != curr.isLiking,
+                builder: (context, state) => LoadingFAB(
+                  loading: state.isLiking,
+                  onPressed: () => context.read<FavouriteBloc>().add(
+                    ToggleLike(
+                      wall: state.isLiked ? null : widget.wallInfo,
+                      favWall: state.isLiked
+                          ? LocalDatabase.instance.getFavourite(widget.wallInfo.id ?? "")
+                          : null,
+                    ),
+                  ),
+                  child: Icon(
+                    state.isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: state.isLiked ? Colors.red : Colors.black,
+                    size: state.isLiked ? 30 : 25,
+                  ),
                 ),
               ),
 
               AppConst.sizedBoxH10,
 
-              /// navigator to Author page with author image and User data FAB:
-              FloatingActionButton(
-                heroTag: null,
-                splashColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                backgroundColor: Colors.white,
-                onPressed: () {
-                  context.pushNamed(
-                    AppRoutes.portfolio,
-                    queryParameters: {"userName": widget.wallInfo.userName},
-                  );
-                },
+              // Author FAB:
+              LoadingFAB(
+                loading: false,
                 child: CircleAvatar(
                   radius: 22,
                   backgroundColor: Colors.transparent,
                   backgroundImage: CachedNetworkImageProvider(
-                    widget.wallInfo.avatar?.large ?? "",
+                    widget.wallInfo.user?.profileImage?.large ?? "",
                   ),
                 ),
+                onPressed: () {
+                  context.pushNamed(
+                    AppRoutes.portfolio,
+                    queryParameters: {"userName": widget.wallInfo.user},
+                  );
+                },
               ),
 
               AppConst.sizedBoxH10,
@@ -169,7 +150,8 @@ class _ViewImageState extends State<ViewImage> {
               ///  Speed dial FAB(edit,download,info):
               FloatingButtons(
                 edit: Icon(Icons.edit, color: Colors.black),
-                editPressed: () => context.read<ViewImageBloc>().add(EditingWall()),
+                editPressed: () =>
+                    context.read<ViewImageBloc>().add(EditingWall()),
 
                 download: Icon(Icons.download, color: Colors.black),
                 isDownloadLoading: state.isDownloading,
@@ -177,8 +159,9 @@ class _ViewImageState extends State<ViewImage> {
                   DownloadWall(
                     boundaryKey: _previewController,
                     url: widget.wallInfo.urls?.full,
-                    bytes: widget.imageBytes,
-                  )),
+                    // bytes: widget.favouriteWall,
+                  ),
+                ),
 
                 info: Icon(Icons.info_outline, color: Colors.black),
                 infoPressed: () {},
@@ -200,7 +183,7 @@ class _ViewImageState extends State<ViewImage> {
               onPressed: () => context.pop(),
               child: const Icon(
                 CupertinoIcons.back,
-                size: 28,
+                size: 24,
                 color: Colors.black,
               ),
             ),

@@ -4,21 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:walpy/app/core/app_routes/app_router.dart';
 import 'package:walpy/app/core/network/dio_client.dart';
+import 'package:walpy/app/modules/favourite/data/local_datasource.dart';
 import 'package:walpy/app/modules/home/domain/home_usecase.dart';
 import 'package:walpy/app/modules/home/presentation/bloc/home_bloc.dart';
 import 'package:workmanager/workmanager.dart';
 import 'app/Get_Controller/FeatchApi.dart';
 import 'app/Get_Controller/settings_controller.dart';
-import 'app/modules/home/presentation/view/dashboard.dart';
 import 'app/core/Theme/SystemTheme.dart';
 import 'app/core/callback_diapatcher.dart';
 import 'app/core/shared_preferences.dart';
-import 'app/modules/fav/data/fav-model.dart';
-import 'app/modules/view_image/bloc/view_image_bloc.dart';
+import 'app/modules/favourite/presentation/bloc/favourite_bloc.dart';
 
 
 Future<void> setupAutoWallpaperTask() async {
@@ -114,11 +111,7 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
-  var dir = await getApplicationDocumentsDirectory();
-  Hive.init(dir.path);
-  Hive.registerAdapter(FavModelAdapter());
-  await Hive.openBox<FavModel>('favorites');
-
+  await LocalDatabase.instance.init();
   DioClient.instance;
 
   Get.put(ApiCall());
@@ -133,6 +126,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<HomeBloc>(create: (context) => HomeBloc(HomeUseCase())),
+        BlocProvider<FavouriteBloc>(create: (context) => FavouriteBloc()..add(LoadFavourites())),
       ],
       child: MaterialApp.router(
 

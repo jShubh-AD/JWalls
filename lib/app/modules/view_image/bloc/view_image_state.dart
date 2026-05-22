@@ -32,7 +32,7 @@ class ViewImageState extends Equatable {
     final bool? isError,
     final bool? showSnack,
     final String? message,
-}){
+  }) {
     return ViewImageState(
       editStatus: editStatus ?? this.editStatus,
       blur: blur ?? this.blur,
@@ -41,10 +41,18 @@ class ViewImageState extends Equatable {
       title: title ?? this.title,
       message: message ?? this.message,
       isError: isError ?? this.isError,
-      showSnack : showSnack ?? this.showSnack
+      showSnack: showSnack ?? this.showSnack,
     );
   }
 
   @override
-  List<Object?> get props => [blur,editStatus,title, message, isError, isSettingWall, isDownloading];
+  List<Object?> get props => [
+    blur,
+    editStatus,
+    title,
+    message,
+    isError,
+    isSettingWall,
+    isDownloading,
+  ];
 }

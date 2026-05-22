@@ -1,12 +1,12 @@
-import 'dart:typed_data';
+import 'package:walpy/app/modules/favourite/data/favourite_model.dart';
 import '../../../home/data/wallaper_response_modle.dart';
 
 class ViewImageArgs {
   final Wallpaper wallInfo;
-  final Uint8List? imageBytes;
+  final FavouriteModel? favouriteWall;
 
   ViewImageArgs({
     required this.wallInfo,
-    this.imageBytes,
+    this.favouriteWall,
   });
 }

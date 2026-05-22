@@ -9,7 +9,10 @@ import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+import 'package:walpy/app/modules/favourite/data/favourite_model.dart';
+import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import '../../../core/utils/helpers/app_helpers.dart';
+import '../../favourite/data/local_datasource.dart';
 
 part 'view_image_event.dart';
 
@@ -22,9 +25,6 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
 
     // download wall events
     on<DownloadWall>(downloadWall);
-
-    // like wall events
-    on<ViewImageLikeWall>(viewImageLikeWall);
 
     // edit events
     on<EditingWall>(editingWall);
@@ -171,13 +171,6 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
       log(name: "Download", "", error: e, stackTrace: st);
     }
   }
-
-
-  // Like Wall Event
-  Future<void> viewImageLikeWall(
-    ViewImageEvent event,
-    Emitter<ViewImageState> emit,
-  ) async {}
 
   // Edit Wall Event
   Future<void> editingWall(EditingWall event, Emitter<ViewImageState> emit) async {

@@ -7,8 +7,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import '../Get_Controller/FeatchApi.dart';
 import '../core/Widgets/TextInput.dart';
-import '../modules/fav/data/fav-model.dart';
-import '../modules/fav/data/hive_service.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -22,7 +20,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   Timer? _debounce;
   final ApiCall fetchWalls = Get.find<ApiCall>();
-  final FavService favService = FavService();
+  // final FavService favService = FavService();
 
   void _onSearchSubmitted(String value) {
     _debounce?.cancel();
@@ -140,29 +138,29 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             ),
                           ),
-                          Positioned(
-                            bottom: 10,
-                            right: 10,
-                            child: ValueListenableBuilder(
-                              valueListenable: favService.listenableFor(searchWalls.id!),
-                              builder: (context, value, child) {
-                                final isLike = favService.contains(searchWalls.id!);
-                                return InkWell(
-                                  onTap: () async => favService.toggle(FavModel(
-                                    id: searchWalls.id!,
-                                    bytes: await urlToUint8(urls.regular!),
-                                    avtar: searchWalls.avatar!.medium!,
-                                  )),
-                                  child: Icon(
-                                    isLike ? Icons.favorite : Icons.favorite_border,
-                                    color: isLike ? Colors.red : Colors.white,
-                                    size: 25,
-                                    weight: 0.1,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                          // Positioned(
+                          //   bottom: 10,
+                          //   right: 10,
+                          //   child: ValueListenableBuilder(
+                          //     valueListenable: favService.listenableFor(searchWalls.id!),
+                          //     builder: (context, value, child) {
+                          //       final isLike = favService.contains(searchWalls.id!);
+                          //       return InkWell(
+                          //         // onTap: () async => favService.toggle(FavModel(
+                          //         //   id: searchWalls.id!,
+                          //         //   bytes: await urlToUint8(urls.regular!),
+                          //         //   avtar: searchWalls.avatar!.medium!,
+                          //         // )),
+                          //         child: Icon(
+                          //           isLike ? Icons.favorite : Icons.favorite_border,
+                          //           color: isLike ? Colors.red : Colors.white,
+                          //           size: 25,
+                          //           weight: 0.1,
+                          //         ),
+                          //       );
+                          //     },
+                          //   ),
+                          // ),
                         ],
                       );
                     },

@@ -5,7 +5,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:walpy/app/core/Widgets/wall.dart';
 import 'package:walpy/app/core/utils/const/app_const.dart';
 import 'package:walpy/app/modules/home/presentation/bloc/home_bloc.dart';
-import '../../../fav/data/hive_service.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -16,7 +15,7 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   // with AutomaticKeepAliveClientMixin { todo: don't remove this cmt maybe helpful for remembering scroll position
-  final FavService favService = FavService();
+  // final FavService favService = FavService();
   final _scrollController = ScrollController();
 
   // @override

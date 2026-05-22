@@ -15,6 +15,7 @@ class LoadingFAB extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
+      heroTag: null,
       backgroundColor: Colors.white,
       splashColor: Colors.transparent,
       shape: RoundedRectangleBorder(

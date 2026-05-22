@@ -5,11 +5,12 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:walpy/app/Get_Controller/user_controller.dart';
 import 'package:walpy/app/core/utils/const/app_const.dart';
+import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 
 class Portfolio extends StatefulWidget {
-  const Portfolio({super.key, required this.userName});
+  const Portfolio({super.key, required this.user});
 
-  final String userName;
+  final User user;
 
   @override
   State<Portfolio> createState() => _PortfolioState();
@@ -24,7 +25,7 @@ class _PortfolioState extends State<Portfolio> {
   @override
   void initState() {
     super.initState();
-    fetchUser.loadUser(widget.userName);
+    fetchUser.loadUser(widget.user.username ?? "");
   }
 
   @override
@@ -32,7 +33,7 @@ class _PortfolioState extends State<Portfolio> {
     final darkMode = isDarkMode(context);
 
     return Obx(() {
-      print('userName: ${widget.userName}');
+      print('userName: ${widget.user.username ?? ""}');
       final user = fetchUser.user.value;
       if (user == null) {
         return const Center(

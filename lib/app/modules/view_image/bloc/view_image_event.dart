@@ -7,6 +7,7 @@ sealed class ViewImageEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+// Set Wall Events
 class ViewImageSetWall extends ViewImageEvent{
   final GlobalKey boundaryKey;
 
@@ -14,8 +15,6 @@ class ViewImageSetWall extends ViewImageEvent{
   @override
   List<Object> get props => [boundaryKey];
 }
-
-class ViewImageLikeWall extends ViewImageEvent{}
 
 // Download Wall Events
 class DownloadWall extends ViewImageEvent{

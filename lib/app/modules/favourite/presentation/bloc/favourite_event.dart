@@ -8,14 +8,7 @@ sealed class FavouriteEvent extends Equatable {
 
 class LoadFavourites extends FavouriteEvent {}
 
-class ResetLikeState extends FavouriteEvent {}
-
-class CheckIsLiked extends FavouriteEvent {
-  final String wallId;
-  const CheckIsLiked(this.wallId);
-  @override
-  List<Object?> get props => [wallId];
-}
+class ClearSnack extends FavouriteEvent {}
 
 class ToggleLike extends FavouriteEvent {
   final Wallpaper? wall;

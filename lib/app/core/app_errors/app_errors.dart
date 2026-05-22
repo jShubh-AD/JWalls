@@ -3,4 +3,7 @@ class AppException implements Exception {
   final int? statusCode;
 
   const AppException(this.message, {this.statusCode});
+
+  @override
+  String toString() => message;
 }

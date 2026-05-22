@@ -15,6 +15,7 @@ import 'app/Get_Controller/settings_controller.dart';
 import 'app/core/Theme/SystemTheme.dart';
 import 'app/core/callback_diapatcher.dart';
 import 'app/core/shared_preferences.dart';
+import 'app/modules/favourite/domain/favourite_usecase.dart';
 import 'app/modules/favourite/presentation/bloc/favourite_bloc.dart';
 
 
@@ -93,7 +94,7 @@ void main() async {
 
   // Initialize the settings controller
   print('🔧 Initializing Settings Controller...');
-  final settingsController = Get.put(WallpaperSettingsController());
+  Get.put(WallpaperSettingsController());
 
   // Wait for controller to load preferences
   await Future.delayed(const Duration(milliseconds: 100));
@@ -126,7 +127,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<HomeBloc>(create: (context) => HomeBloc(HomeUseCase())),
-        BlocProvider<FavouriteBloc>(create: (context) => FavouriteBloc()..add(LoadFavourites())),
+        BlocProvider<FavouriteBloc>(create: (context) => FavouriteBloc(FavouriteUseCase())..add(LoadFavourites())),
       ],
       child: MaterialApp.router(
 

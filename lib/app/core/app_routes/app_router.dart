@@ -50,10 +50,6 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRoutes.view_image,
       path: '/view_image',
-      onExit: (context, state){
-        context.read<FavouriteBloc>().add(ResetLikeState());
-        return true;
-      },
       builder: (context, state) {
         final args = state.extra as ViewImageArgs;
         return BlocProvider(

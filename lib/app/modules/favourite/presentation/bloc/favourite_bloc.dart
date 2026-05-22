@@ -7,134 +7,128 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/utils/helpers/app_helpers.dart';
 import '../../../home/data/wallaper_response_modle.dart';
 import '../../data/favourite_model.dart';
-import '../../data/local_datasource.dart';
+import '../../domain/favourite_usecase.dart';
 
 part 'favourite_event.dart';
-
 part 'favourite_state.dart';
 
 class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
-  FavouriteBloc() : super(const FavouriteState()) {
+  final FavouriteUseCase _favouriteUseCase;
+
+  FavouriteBloc(this._favouriteUseCase) : super(const FavouriteInitial()) {
     on<LoadFavourites>(_loadFavourites);
     on<ToggleLike>(_toggleLike);
-    on<CheckIsLiked>(_checkIsLiked);
-    on<ResetLikeState>((event, emit) {
-      emit(state.copyWith(isLiking: false, isLiked: false, showSnack: false));
-    });
+    on<ClearSnack>(_clearSnack);
   }
 
   Future<void> _loadFavourites(
     LoadFavourites event,
     Emitter<FavouriteState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true));
-    final favourites = LocalDatabase.instance.getFavourites();
-    emit(state.copyWith(isLoading: false, favourites: favourites));
+    emit(const FavouriteLoading());
+    try {
+      final favourites = _favouriteUseCase.getFavourites();
+      emit(FavouriteLoaded(favourites: favourites));
+    } catch (e, st) {
+      log("Error loading favourites", error: e, stackTrace: st);
+      emit(FavouriteFailure(e.toString()));
+    }
   }
 
-  Future<void> _checkIsLiked(
-    CheckIsLiked event,
-    Emitter<FavouriteState> emit,
-  ) async {
-    final isLiked = LocalDatabase.instance.isFavourite(event.wallId);
-    emit(state.copyWith(isLiked: isLiked));
+  void _clearSnack(ClearSnack event, Emitter<FavouriteState> emit) {
+    if (state is FavouriteLoaded) {
+      emit((state as FavouriteLoaded).copyWith(clearSnack: true));
+    }
   }
 
   Future<void> _toggleLike(
     ToggleLike event,
     Emitter<FavouriteState> emit,
   ) async {
-    emit(state.copyWith(isLiking: true, showSnack: false));
+    final currentState = state;
+    final List<FavouriteModel> currentFavourites =
+        currentState is FavouriteLoaded ? currentState.favourites : [];
+
+    final id = event.wall?.id ?? event.favWall?.id;
+    if (id == null) return;
+
+    emit(FavouriteLoaded(favourites: currentFavourites, togglingFavId: id));
+
     try {
-      final db = LocalDatabase.instance;
+      final existingIndex = currentFavourites.indexWhere((f) => f.id == id);
+      final isLiked = existingIndex != -1;
 
-      // unlike
-      if (event.favWall != null) {
-        final file = File(event.favWall!.imagePath!);
-        if (await file.exists()) await file.delete();
-        await db.removeFavourite(event.favWall!.id!);
+      if (isLiked) {
+        // unlike
+        final favModel = currentFavourites[existingIndex];
+        if (favModel.imagePath != null) {
+          final file = File(favModel.imagePath!);
+          if (await file.exists()) {
+            await file.delete();
+          }
+        }
+        await _favouriteUseCase.removeFavourite(id);
 
-        // update list and isLiked
-        final updated = state.favourites
-            .where((f) => f.id != event.favWall!.id)
-            .toList();
+        final updatedList = List<FavouriteModel>.from(currentFavourites)
+          ..removeAt(existingIndex);
 
         emit(
-          state.copyWith(
-            isLiking: false,
-            isLiked: false,
-            favourites: updated,
-            showSnack: true,
-            isError: false,
-            title: "Removed",
-            message: "Wall removed from liked.",
+          FavouriteLoaded(
+            favourites: updatedList,
+            snackMessage: "Wall removed from liked.",
+            isErrorSnack: false,
           ),
         );
-        return;
-      }
+      } else {
+        // like
+        final url =
+            event.wall?.urls?.full ??
+            event.wall?.urls?.regular ??
+            event.favWall?.urls?.full ??
+            event.favWall?.urls?.regular;
+        if (url == null) {
+          emit(
+            FavouriteLoaded(
+              favourites: currentFavourites,
+              snackMessage: "Could not save image, please try again",
+              isErrorSnack: true,
+            ),
+          );
+          return;
+        }
 
-      // like
-      final url = event.wall!.urls?.full ?? event.wall!.urls?.regular;
-      if (url == null) {
+        final bytes = await AppHelpers.urlToBytes(url);
+        final dirPath = _favouriteUseCase.getLikedFolderPath();
+        final file = File(
+          '$dirPath/${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
+        await file.writeAsBytes(bytes);
+
+        final fav = FavouriteModel(
+          id: id,
+          imagePath: file.path,
+          urls: event.wall?.urls ?? event.favWall?.urls,
+          user: event.wall?.user ?? event.favWall?.user,
+        );
+        await _favouriteUseCase.addFavourite(fav);
+
+        final updatedList = [...currentFavourites, fav];
+
         emit(
-          state.copyWith(
-            isLiking: false,
-            showSnack: true,
-            isError: true,
-            title: "Error",
-            message: "Could not save image, please try again",
+          FavouriteLoaded(
+            favourites: updatedList,
+            snackMessage: "Wall added to liked.",
+            isErrorSnack: false,
           ),
         );
-        return;
       }
-
-      final bytes = await AppHelpers.urlToBytes(url);
-      if (emit.isDone) {
-        log("linking canceled after getting bytes ", name: "Toggle Like");
-        return;
-      }
-
-      final file = File(
-        '${db.likedFolder.path}/${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
-      await file.writeAsBytes(bytes);
-      if (emit.isDone) {
-        log("linking canceled after file.write ", name: "Toggle Like");
-        return;
-      }
-
-      final fav = FavouriteModel(
-        id: event.wall!.id,
-        imagePath: file.path,
-        urls: event.wall!.urls,
-        user: event.wall!.user,
-      );
-      await db.addFavourite(fav);
-      if (emit.isDone) {
-        log("linking canceled after db.write ", name: "Toggle Like");
-        return;
-      }
-
-      emit(
-        state.copyWith(
-          isLiking: false,
-          isLiked: true,
-          favourites: [...state.favourites, fav],
-          showSnack: true,
-          isError: false,
-          title: "Liked!",
-          message: "Wall added to liked.",
-        ),
-      );
     } catch (e, st) {
-      log("", name: "Toggle Like", error: e, stackTrace: st);
+      log("Error toggling favorite", error: e, stackTrace: st);
       emit(
-        state.copyWith(
-          isLiking: false,
-          showSnack: true,
-          isError: true,
-          title: "Error",
-          message: "Something went wrong, please try again",
+        FavouriteLoaded(
+          favourites: currentFavourites,
+          snackMessage: "Something went wrong, please try again",
+          isErrorSnack: true,
         ),
       );
     }

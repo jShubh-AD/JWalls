@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,21 +29,30 @@ class ViewImage extends StatefulWidget {
 }
 
 class _ViewImageState extends State<ViewImage> {
+  String? get _id => widget.wallInfo?.id ?? widget.favouriteWall?.id;
+  String? get _fullUrl => widget.wallInfo?.urls?.full ?? widget.favouriteWall?.urls?.full;
+  String? get _smallUrl => widget.wallInfo?.urls?.small ?? widget.favouriteWall?.urls?.small;
+  String? get _profileImageLarge => widget.wallInfo?.user?.profileImage?.large ?? widget.favouriteWall?.user?.profileImage?.large;
+  User? get _user => widget.wallInfo?.user ?? widget.favouriteWall?.user;
+
+  late ImageProvider currentImageProvider;
+  final GlobalKey _previewController = GlobalKey();
+
   @override
   void initState() {
     super.initState();
-    context.read<FavouriteBloc>().add(CheckIsLiked(widget.wallInfo?.id ?? ""));
-    ImageProvider fullImage;
-    if (widget.wallInfo?.urls?.full != null) {
-      fullImage = CachedNetworkImageProvider(widget.wallInfo?.urls?.full ?? "");
+    final favId = _id ?? "";
+    final localFav = LocalDatabase.instance.getFavourite(favId);
+    final localFile = localFav?.imagePath != null ? File(localFav!.imagePath!) : null;
+
+    if (localFile != null && localFile.existsSync()) {
+      currentImageProvider = FileImage(localFile);
     } else {
-      fullImage = CachedNetworkImageProvider(
-        widget.favouriteWall?.urls?.full ?? "",
-      );
-    }
-    fullImage
-        .resolve(const ImageConfiguration())
-        .addListener(
+      currentImageProvider = CachedNetworkImageProvider(_smallUrl ?? "");
+      final fullImageUrl = _fullUrl;
+      if (fullImageUrl != null && fullImageUrl.isNotEmpty) {
+        final fullImage = CachedNetworkImageProvider(fullImageUrl);
+        fullImage.resolve(const ImageConfiguration()).addListener(
           ImageStreamListener((_, __) {
             if (mounted) {
               setState(() {
@@ -51,12 +61,9 @@ class _ViewImageState extends State<ViewImage> {
             }
           }),
         );
+      }
+    }
   }
-
-  final GlobalKey _previewController = GlobalKey();
-  late ImageProvider currentImageProvider = CachedNetworkImageProvider(
-    widget.wallInfo?.urls?.small ?? "",
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +82,7 @@ class _ViewImageState extends State<ViewImage> {
         },
         builder: (context, state) {
           if (state.editStatus == EditStatus.editing) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -94,79 +101,87 @@ class _ViewImageState extends State<ViewImage> {
               ),
               AppConst.sizedBoxH10,
 
-              // Like FBA
+              // Like FAB
               BlocConsumer<FavouriteBloc, FavouriteState>(
                 listenWhen: (prev, curr) =>
-                    prev.showSnack != curr.showSnack && curr.showSnack,
-                listener: (context, state) => AppSnackBar.show(
-                  context,
-                  title: state.title,
-                  message: state.message,
-                  isError: state.isError,
-                ),
+                    curr is FavouriteLoaded &&
+                    curr.snackMessage != null &&
+                    (prev is! FavouriteLoaded || prev.snackMessage != curr.snackMessage),
+                listener: (context, state) {
+                  if (state is FavouriteLoaded && state.snackMessage != null) {
+                    AppSnackBar.show(
+                      context,
+                      title: state.isErrorSnack == true ? "Error" : "Success",
+                      message: state.snackMessage!,
+                      isError: state.isErrorSnack == true,
+                    );
+                    context.read<FavouriteBloc>().add(ClearSnack());
+                  }
+                },
                 buildWhen: (prev, curr) =>
-                    prev.isLiked != curr.isLiked ||
-                    prev.isLiking != curr.isLiking,
-                builder: (context, state) => LoadingFAB(
-                  loading: state.isLiking,
-                  onPressed: () => context.read<FavouriteBloc>().add(
-                    ToggleLike(
-                      wall: state.isLiked ? null : widget.wallInfo,
-                      favWall: state.isLiked
-                          ? LocalDatabase.instance.getFavourite(
-                              widget.wallInfo?.id ?? "",
-                            )
-                          : null,
+                    curr is FavouriteLoaded || prev is FavouriteLoaded,
+                builder: (context, state) {
+                  final isLiked = state is FavouriteLoaded && state.favourites.any((f) => f.id == _id);
+                  final isLiking = state is FavouriteLoaded && state.togglingFavId == _id;
+
+                  return LoadingFAB(
+                    loading: isLiking,
+                    onPressed: () {
+                      context.read<FavouriteBloc>().add(
+                        ToggleLike(
+                          wall: widget.wallInfo,
+                          favWall: widget.favouriteWall,
+                        ),
+                      );
+                    },
+                    child: Icon(
+                      isLiked ? Icons.favorite : Icons.favorite_border,
+                      color: isLiked ? Colors.red : Colors.black,
+                      size: isLiked ? 30 : 25,
                     ),
-                  ),
-                  child: Icon(
-                    state.isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: state.isLiked ? Colors.red : Colors.black,
-                    size: state.isLiked ? 30 : 25,
-                  ),
-                ),
-              ),
-
-              AppConst.sizedBoxH10,
-
-              // Author FAB:
-              LoadingFAB(
-                loading: false,
-                child: CircleAvatar(
-                  radius: 22,
-                  backgroundColor: Colors.transparent,
-                  backgroundImage: CachedNetworkImageProvider(
-                    widget.wallInfo?.user?.profileImage?.large ??
-                        widget.favouriteWall?.user?.profileImage?.large ??
-                        "",
-                  ),
-                ),
-                onPressed: () {
-                  context.pushNamed(
-                    AppRoutes.portfolio,
-                    queryParameters: {"userName": widget.wallInfo?.user},
                   );
                 },
               ),
 
               AppConst.sizedBoxH10,
 
-              ///  Speed dial FAB(edit,download,info):
+              // Author FAB
+              if (_profileImageLarge != null && _profileImageLarge!.isNotEmpty)
+                LoadingFAB(
+                  loading: false,
+                  child: CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.transparent,
+                    backgroundImage: CachedNetworkImageProvider(_profileImageLarge!),
+                  ),
+                  onPressed: () {
+                    if (_user != null) {
+                      context.pushNamed(
+                        AppRoutes.portfolio,
+                        extra: _user,
+                      );
+                    }
+                  },
+                ),
+
+              AppConst.sizedBoxH10,
+
+              /// Speed dial FAB (edit, download, info)
               FloatingButtons(
-                edit: Icon(Icons.edit, color: Colors.black),
+                edit: const Icon(Icons.edit, color: Colors.black),
                 editPressed: () =>
                     context.read<ViewImageBloc>().add(EditingWall()),
 
-                download: Icon(Icons.download, color: Colors.black),
+                download: const Icon(Icons.download, color: Colors.black),
                 isDownloadLoading: state.isDownloading,
                 downloadPressed: () => context.read<ViewImageBloc>().add(
                   DownloadWall(
                     boundaryKey: _previewController,
-                    url: widget.wallInfo?.urls?.full,
+                    url: _fullUrl,
                   ),
                 ),
 
-                info: Icon(Icons.info_outline, color: Colors.black),
+                info: const Icon(Icons.info_outline, color: Colors.black),
                 infoPressed: () {},
               ),
             ],
@@ -209,7 +224,7 @@ class _ViewImageState extends State<ViewImage> {
               loadingBuilder: (context, event) {
                 return Container(
                   color: Colors.grey.shade200,
-                  child: Center(
+                  child: const Center(
                     child: CircularProgressIndicator(color: Colors.black),
                   ),
                 );
@@ -219,7 +234,6 @@ class _ViewImageState extends State<ViewImage> {
             BlocBuilder<ViewImageBloc, ViewImageState>(
               buildWhen: (prev, curr) => prev.blur != curr.blur,
               builder: (context, state) {
-                print(("filter rebuild"));
                 if (state.blur == 0.0) return const SizedBox.shrink();
                 return Positioned.fill(
                   child: BackdropFilter(
@@ -236,10 +250,10 @@ class _ViewImageState extends State<ViewImage> {
             BlocBuilder<ViewImageBloc, ViewImageState>(
               buildWhen: (prev, curr) => prev.editStatus != curr.editStatus,
               builder: (context, state) {
-                print(("slider rebuild"));
-                if (state.editStatus != EditStatus.editing)
+                if (state.editStatus != EditStatus.editing) {
                   return const SizedBox.shrink();
-                return Positioned(
+                }
+                return const Positioned(
                   bottom: 80,
                   left: 0,
                   right: 0,

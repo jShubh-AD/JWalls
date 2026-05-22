@@ -1,17 +1,19 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
+import 'package:walpy/app/core/Widgets/wall.dart';
 import '../Get_Controller/FeatchApi.dart';
 import '../core/Widgets/TextInput.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
-  static const BorderRadius borderRadius24 = BorderRadius.all(Radius.circular(10));
+  static const BorderRadius borderRadius24 = BorderRadius.all(
+    Radius.circular(10),
+  );
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -30,151 +32,103 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  bool isDarkMode(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+  bool isDarkMode(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
     final darkMode = isDarkMode(context);
+    return SizedBox();
+    // return Scaffold(
+    //   appBar: AppBar(
+    //     centerTitle: true,
+    //     surfaceTintColor: Colors.transparent,
+    //     backgroundColor: Colors.transparent,
+    //     toolbarHeight: 46,
+    //     title: Row(
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       mainAxisSize: MainAxisSize.min,
+    //       children: [
+    //         Container(
+    //           height: Get.height * 0.15,
+    //           width: Get.width * 0.15,
+    //           child: Image.asset('assets/images/JWalls_appBar_big.png'),
+    //         ),
+    //         Text(
+    //           'JWalls',
+    //           style: TextStyle(
+    //             color: darkMode ? Colors.white : Colors.black,
+    //             fontWeight: FontWeight.w600,
+    //             fontSize: 24,
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    //   body: SafeArea(
+    //     child: Column(
+    //       children: [
+    //         InputText(
+    //           controller: fetchWalls.searchController,
+    //           onSubmitted: _onSearchSubmitted,
+    //         ).paddingOnly(left: 20, right: 20, bottom: 10, top: 10),
+    //         Expanded(
+    //           child: NotificationListener<ScrollNotification>(
+    //             onNotification: (notif) {
+    //               if (notif is ScrollUpdateNotification &&
+    //                   notif.metrics.pixels >= notif.metrics.maxScrollExtent - 300 &&
+    //                   !fetchWalls.isSearchLoading.value
+    //               // &&  !fetchWalls.isPagination.value
+    //               ) {
+    //                 // fetchWalls.isPagination.value = true;
+    //                 fetchWalls.searchPageNum++;
+    //                 fetchWalls.searchApi(search: fetchWalls.searchController.text);
+    //               }
+    //               return false;
+    //             },
+    //             child: Obx(() {
+    //               if (fetchWalls.isSearchLoading.value &&
+    //                   fetchWalls.searchPhotos.isEmpty &&
+    //                   fetchWalls.searchPageNum == 1) {
+    //                 // central shimmer for first page
+    //                 return Center(
+    //                   child: CircularProgressIndicator(
+    //                     color: darkMode ? Colors.white : Colors.black,
+    //                   ),
+    //                 );
+    //               }
 
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        surfaceTintColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
-        toolbarHeight: 46,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: Get.height * 0.15,
-              width: Get.width * 0.15,
-              child: Image.asset('assets/images/JWalls_appBar_big.png'),
-            ),
-            Text(
-              'JWalls',
-              style: TextStyle(
-                color: darkMode ? Colors.white : Colors.black,
-                fontWeight: FontWeight.w600,
-                fontSize: 24,
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            InputText(
-              controller: fetchWalls.searchController,
-              onSubmitted: _onSearchSubmitted,
-            ).paddingOnly(left: 20, right: 20, bottom: 10, top: 10),
-            Expanded(
-              child: NotificationListener<ScrollNotification>(
-                onNotification: (notif) {
-                  if (notif is ScrollUpdateNotification &&
-                      notif.metrics.pixels >= notif.metrics.maxScrollExtent - 300 &&
-                      !fetchWalls.isSearchLoading.value
-                  // &&  !fetchWalls.isPagination.value
-                  ) {
-                    // fetchWalls.isPagination.value = true;
-                    fetchWalls.searchPageNum++;
-                    fetchWalls.searchApi(search: fetchWalls.searchController.text);
-                  }
-                  return false;
-                },
-                child: Obx(() {
-                  if (fetchWalls.isSearchLoading.value &&
-                      fetchWalls.searchPhotos.isEmpty &&
-                      fetchWalls.searchPageNum == 1) {
-                    // central shimmer for first page
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: darkMode ? Colors.white : Colors.black,
-                      ),
-                    );
-                  }
+    //               if (fetchWalls.noImageFound.value) {
+    //                 return Center(
+    //                   child: Text(
+    //                     'No image for "${fetchWalls.searchController.text}", try something else.',
+    //                   ),
+    //                 );
+    //               }
 
-                  if (fetchWalls.noImageFound.value) {
-                    return Center(
-                      child: Text(
-                        'No image for "${fetchWalls.searchController.text}", try something else.',
-                      ),
-                    );
-                  }
-
-                  // masonry grid for images
-                  return MasonryGridView.count(
-                    itemCount: fetchWalls.searchPhotos.length,
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    itemBuilder: (context, index) {
-                      final searchWalls = fetchWalls.searchPhotos[index];
-                      final urls = searchWalls.urls!;
-
-                      return Stack(
-                        children: [
-                          SizedBox(
-                            width: double.infinity,
-                            height: index.isEven ? 180 : 250,
-                            child: ClipRRect(
-                              borderRadius: SearchPage.borderRadius24,
-                              child: GestureDetector(
-                                // onTap: () => Get.to(() => ViewImage(
-                                //   hdImageUrl: urls.full,
-                                //   id: searchWalls.id!,
-                                //   profileImage: searchWalls.avatar!.medium!,
-                                //   lowQualityImageUrl: urls.small,
-                                //   userName: searchWalls.userName,
-                                //   name: searchWalls.name,
-                                // )),
-                                child: CachedNetworkImage(
-                                  fadeInDuration: Duration.zero,
-                                  imageUrl: urls.small!,
-                                  fit: BoxFit.cover,
-                                  placeholder: (_, __)   { return Container(color: Colors.grey.shade100);}
-                                ),
-                              ),
-                            ),
-                          ),
-                          // Positioned(
-                          //   bottom: 10,
-                          //   right: 10,
-                          //   child: ValueListenableBuilder(
-                          //     valueListenable: favService.listenableFor(searchWalls.id!),
-                          //     builder: (context, value, child) {
-                          //       final isLike = favService.contains(searchWalls.id!);
-                          //       return InkWell(
-                          //         // onTap: () async => favService.toggle(FavModel(
-                          //         //   id: searchWalls.id!,
-                          //         //   bytes: await urlToUint8(urls.regular!),
-                          //         //   avtar: searchWalls.avatar!.medium!,
-                          //         // )),
-                          //         child: Icon(
-                          //           isLike ? Icons.favorite : Icons.favorite_border,
-                          //           color: isLike ? Colors.red : Colors.white,
-                          //           size: 25,
-                          //           weight: 0.1,
-                          //         ),
-                          //       );
-                          //     },
-                          //   ),
-                          // ),
-                        ],
-                      );
-                    },
-                  ).paddingSymmetric(horizontal: 5);
-                }),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    //               // masonry grid for images
+    //               return MasonryGridView.count(
+    //                 itemCount: fetchWalls.searchPhotos.length,
+    //                 crossAxisCount: 2,
+    //                 mainAxisSpacing: 8,
+    //                 crossAxisSpacing: 8,
+    //                 itemBuilder: (context, index) {
+    //                   final searchWalls = fetchWalls.searchPhotos[index];
+    //                   return Wall(index, wallInfo: searchWalls);
+    //                 },
+    //               ).paddingSymmetric(horizontal: 5);
+    //             }),
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
+
   Future urlToUint8(String url) async {
     final file = await DefaultCacheManager().getSingleFile(url);
-    final bytes = await file.readAsBytes(); return bytes;
+    final bytes = await file.readAsBytes();
+    return bytes;
   }
 }

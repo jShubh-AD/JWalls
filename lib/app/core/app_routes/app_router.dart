@@ -6,7 +6,6 @@ import 'package:walpy/app/modules/search/presentation/bloc/search_bloc.dart';
 import 'package:walpy/app/modules/search/domain/search_usecase.dart';
 import 'package:walpy/app/modules/search/data/search_repo_imp.dart';
 import 'package:walpy/app/UI/settings.dart';
-import 'package:walpy/app/modules/favourite/presentation/bloc/favourite_bloc.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/view_image/presentation/pages/view_image.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
@@ -39,9 +38,7 @@ final appRouter = GoRouter(
       name: AppRoutes.search,
       path: '/search',
       builder: (context, state) => BlocProvider(
-        create: (context) => SearchBloc(
-          SearchUseCase(SearchRepoImp()),
-        )..add(LoadSearchHistory()),
+        create: (context) => SearchBloc(SearchUseCase(SearchRepoImp()))..add(LoadSearchHistory()),
         child: const SearchPage(),
       ),
     ),

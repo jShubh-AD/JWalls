@@ -50,300 +50,406 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  Widget _buildSearchBar(bool darkMode) {
+    return Container(
+      height: 46,
+      decoration: BoxDecoration(
+        color: darkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: TextField(
+        controller: _searchController,
+        focusNode: _focusNode,
+        textInputAction: TextInputAction.search,
+        onSubmitted: _triggerSearch,
+        onChanged: (val) {
+          if (val.trim().isEmpty) {
+            context.read<SearchBloc>().add(const SearchQueryChanged(''));
+          } else {
+            setState(() {});
+          }
+        },
+        style: TextStyle(
+          color: darkMode ? Colors.white : Colors.black87,
+          fontSize: 15,
+        ),
+        cursorColor: darkMode ? Colors.white : Colors.black87,
+        decoration: InputDecoration(
+          hintText: 'Search here...',
+          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+          prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.grey.shade500,
+                    size: 18,
+                  ),
+                  onPressed: () {
+                    _searchController.clear();
+                    context.read<SearchBloc>().add(
+                      const SearchQueryChanged(''),
+                    );
+                    _focusNode.requestFocus();
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoriesRow(bool darkMode) {
+    final categories = [
+      'Minimalist',
+      'Nature',
+      'Aesthetic',
+      'Abstract',
+      'Anime',
+      'Space',
+      'Animals',
+      'Textures',
+      'Dark',
+    ];
+    return Container(
+      height: 48,
+      margin: const EdgeInsets.only(bottom: 8.0, top: 4.0),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final isSelected =
+              _searchController.text.toLowerCase() == category.toLowerCase();
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ActionChip(
+              label: Text(
+                category,
+                style: TextStyle(
+                  color: isSelected
+                      ? (darkMode ? Colors.black : Colors.white)
+                      : (darkMode ? Colors.white70 : Colors.black87),
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+              backgroundColor: isSelected
+                  ? (darkMode ? Colors.white : Colors.black)
+                  : (darkMode ? Colors.grey.shade900 : Colors.grey.shade100),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: const BorderSide(color: Colors.transparent),
+              ),
+              onPressed: () {
+                _searchController.text = category;
+                _searchController.selection = TextSelection.fromPosition(
+                  TextPosition(offset: category.length),
+                );
+                _triggerSearch(category);
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final darkMode = AppConst.isDarkMode(context);
 
     return Scaffold(
       backgroundColor: darkMode ? Colors.black : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: darkMode ? Colors.white : Colors.black,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'Search Wallpapers',
-          style: TextStyle(
-            color: darkMode ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Premium Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              key: const ValueKey('search_bar_padding'),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: darkMode ? Colors.grey.shade900 : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    if (!darkMode)
-                      BoxShadow(
-                        color: Colors.grey.shade300,
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _focusNode,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: _triggerSearch,
-                  onChanged: (val) {
-                    if (val.trim().isEmpty) {
-                      context.read<SearchBloc>().add(const SearchQueryChanged(''));
-                    } else {
-                      // Trigger state rebuild to update suffix icon visibility
-                      setState(() {});
-                    }
+        child: BlocBuilder<SearchBloc, SearchState>(
+          builder: (context, state) {
+            return CustomScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // sticky search bar
+                SliverAppBar(
+                  pinned: true,
+                  floating: true,
+                  snap: false,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  backgroundColor: darkMode ? Colors.black : Colors.white,
+                  automaticallyImplyLeading: false,
+                  titleSpacing: 0,
+                  toolbarHeight: 64,
+                  expandedHeight: 120,
+                  stretch: true,
+                  onStretchTrigger: () async {
+                    print("stretch troggresed");
+                    context.read<SearchBloc>().add(
+                      SearchQueryChanged(_searchController.text.trim()),
+                    );
                   },
-                  style: TextStyle(color: darkMode ? Colors.white : Colors.black),
-                  cursorColor: darkMode ? Colors.white : Colors.black,
-                  decoration: InputDecoration(
-                    hintText: 'Search for high-res wallpapers...',
-                    hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 16),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.close, color: Colors.grey.shade500),
-                            onPressed: () {
-                              _searchController.clear();
-                              context.read<SearchBloc>().add(const SearchQueryChanged(''));
-                              _focusNode.requestFocus();
-                            },
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [_buildCategoriesRow(darkMode)],
+                    ),
+                  ),
+                  title: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 4.0,
+                            ),
+                            child: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: darkMode ? Colors.white70 : Colors.black87,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildSearchBar(darkMode)),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            
-            // Content Area
-            Expanded(
-              child: BlocBuilder<SearchBloc, SearchState>(
-                builder: (context, state) {
-                  if (state is SearchLoading) {
-                    return Center(
+
+                // Render slivers depending on search state
+                if (state is SearchLoading)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
                       child: CircularProgressIndicator(
                         color: darkMode ? Colors.white : Colors.black,
                       ),
-                    );
-                  }
-
-                  if (state is SearchError) {
-                    return Center(
+                    ),
+                  )
+                else if (state is SearchError)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
-                            const SizedBox(height: 16),
+                            Icon(
+                              Icons.error_outline,
+                              size: 44,
+                              color: Colors.red.shade400,
+                            ),
+                            const SizedBox(height: 12),
                             Text(
                               state.message,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: darkMode ? Colors.white70 : Colors.black87,
-                                fontSize: 16,
+                                color: darkMode
+                                    ? Colors.white70
+                                    : Colors.black87,
+                                fontSize: 14,
                               ),
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: darkMode ? Colors.white : Colors.black,
-                                foregroundColor: darkMode ? Colors.black : Colors.white,
+                                elevation: 0,
+                                backgroundColor: darkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                                foregroundColor: darkMode
+                                    ? Colors.black
+                                    : Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
-                              onPressed: () => _triggerSearch(_searchController.text),
+                              onPressed: () =>
+                                  _triggerSearch(_searchController.text),
                               child: const Text('Retry'),
                             ),
                           ],
                         ),
                       ),
-                    );
-                  }
-
-                  if (state is SearchLoaded) {
-                    final walls = state.walls;
-                    if (walls.isEmpty) {
-                      return Center(
+                    ),
+                  )
+                else if (state is SearchLoaded) ...[
+                  if (state.walls.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.search_off,
-                              size: 64,
+                              size: 54,
                               color: Colors.grey.shade500,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             Text(
                               'No wallpapers found for "${state.query}"',
                               style: TextStyle(
                                 color: Colors.grey.shade500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    return CustomScrollView(
-                      controller: _scrollController,
-                      slivers: [
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 4.0),
-                          sliver: SliverMasonryGrid.count(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: AppConst.yAxisSpacing,
-                            crossAxisSpacing: AppConst.xAxisSpacing,
-                            childCount: walls.length + (state.isLoadingNext ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index >= walls.length) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 24),
-                                  alignment: Alignment.center,
-                                  child: CircularProgressIndicator(
-                                    color: darkMode ? Colors.white : Colors.black,
-                                  ),
-                                );
-                              }
-                              return Wall(index, wallInfo: walls[index]);
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  // Default / SearchInitial state
-                  final List<String> history = [];
-                  if (state is SearchInitial) {
-                    history.addAll(state.history);
-                  }
-                  
-                  if (history.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.history,
-                            size: 64,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Search history is empty',
-                            style: TextStyle(
-                              color: Colors.grey.shade400,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Recent Searches',
-                              style: TextStyle(
-                                color: darkMode ? Colors.white70 : Colors.black87,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                context.read<SearchBloc>().add(ClearSearchHistory());
-                              },
-                              child: Text(
-                                'Clear All',
-                                style: TextStyle(
-                                  color: Colors.red.shade400,
-                                  fontSize: 14,
-                                ),
+                                fontSize: 15,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          itemCount: history.length,
-                          separatorBuilder: (context, index) => Divider(
-                            color: darkMode ? Colors.grey.shade800 : Colors.grey.shade200,
-                            height: 1,
-                          ),
-                          itemBuilder: (context, index) {
-                            final queryItem = history[index];
-                            return ListTile(
-                              leading: Icon(
-                                Icons.history,
-                                color: Colors.grey.shade500,
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5.0,
+                        vertical: 4.0,
+                      ),
+                      sliver: SliverMasonryGrid.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: AppConst.yAxisSpacing,
+                        crossAxisSpacing: AppConst.xAxisSpacing,
+                        childCount:
+                            state.walls.length + (state.isLoadingNext ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= state.walls.length) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              alignment: Alignment.center,
+                              child: CircularProgressIndicator(
+                                color: darkMode ? Colors.white : Colors.black,
                               ),
-                              title: Text(
-                                queryItem,
-                                style: TextStyle(
-                                  color: darkMode ? Colors.white : Colors.black87,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              trailing: IconButton(
-                                icon: Icon(
-                                  Icons.close,
-                                  color: Colors.grey.shade500,
-                                  size: 18,
-                                ),
-                                onPressed: () {
-                                  context.read<SearchBloc>().add(DeleteSearchHistoryItem(queryItem));
-                                },
-                              ),
-                              onTap: () {
-                                _searchController.text = queryItem;
-                                _searchController.selection = TextSelection.fromPosition(
-                                  TextPosition(offset: queryItem.length),
-                                );
-                                _triggerSearch(queryItem);
-                              },
                             );
-                          },
-                        ),
+                          }
+                          return Wall(index, wallInfo: state.walls[index]);
+                        },
                       ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+                    ),
+                ] else ...[
+                  ..._buildHistorySlivers(state, darkMode),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
+  }
+
+  List<Widget> _buildHistorySlivers(SearchState state, bool darkMode) {
+    final List<String> history = [];
+    if (state is SearchInitial) {
+      history.addAll(state.history);
+    }
+
+    if (history.isEmpty) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.history, size: 54, color: Colors.grey.shade400),
+                const SizedBox(height: 12),
+                Text(
+                  'Search history is empty',
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 15),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ];
+    }
+
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            top: 8.0,
+            bottom: 4.0,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Searches',
+                style: TextStyle(
+                  color: darkMode ? Colors.white70 : Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  context.read<SearchBloc>().add(ClearSearchHistory());
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Clear All',
+                  style: TextStyle(color: Colors.red.shade400, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final queryItem = history[index];
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
+            leading: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                context.read<SearchBloc>().add(
+                  DeleteSearchHistoryItem(queryItem),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(Icons.close, color: Colors.grey.shade500, size: 16),
+              ),
+            ),
+            title: Text(
+              queryItem,
+              style: TextStyle(
+                color: darkMode ? Colors.white70 : Colors.black87,
+                fontSize: 15,
+              ),
+            ),
+            trailing: Icon(
+              Icons.arrow_outward,
+              color: Colors.grey.shade600,
+              size: 18,
+            ),
+            onTap: () {
+              _searchController.text = queryItem;
+              _searchController.selection = TextSelection.fromPosition(
+                TextPosition(offset: queryItem.length),
+              );
+              _triggerSearch(queryItem);
+            },
+          );
+        }, childCount: history.length),
+      ),
+    ];
   }
 }

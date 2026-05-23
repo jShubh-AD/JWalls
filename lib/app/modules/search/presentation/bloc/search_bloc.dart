@@ -13,7 +13,8 @@ part 'search_state.dart';
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   final SearchUseCase _useCase;
 
-  SearchBloc(this._useCase) : super(SearchInitial(LocalDatabase.instance.getSearchHistory())) {
+  SearchBloc(this._useCase)
+    : super(SearchInitial(LocalDatabase.instance.getSearchHistory())) {
     on<LoadSearchHistory>(_onLoadSearchHistory);
     on<SearchQueryChanged>(_onSearchQueryChanged);
     on<FetchNextSearchPage>(_onFetchNextSearchPage);
@@ -21,7 +22,10 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     on<ClearSearchHistory>(_onClearSearchHistory);
   }
 
-  void _onLoadSearchHistory(LoadSearchHistory event, Emitter<SearchState> emit) {
+  void _onLoadSearchHistory(
+    LoadSearchHistory event,
+    Emitter<SearchState> emit,
+  ) {
     final history = LocalDatabase.instance.getSearchHistory();
     if (state is SearchLoaded) {
       emit((state as SearchLoaded).copyWith(history: history));
@@ -35,7 +39,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     Emitter<SearchState> emit,
   ) async {
     final history = LocalDatabase.instance.getSearchHistory();
-    
+
     if (event.query.trim().isEmpty) {
       emit(SearchInitial(history));
       return;
@@ -56,12 +60,14 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         url: ApiConst.baseUrl + ApiConst.searchWall,
       );
 
-      emit(SearchLoaded(
-        walls: walls,
-        query: event.query,
-        page: 1,
-        history: updatedHistory,
-      ));
+      emit(
+        SearchLoaded(
+          walls: walls,
+          query: event.query,
+          page: 1,
+          history: updatedHistory,
+        ),
+      );
     } catch (e, st) {
       log(name: 'SearchQueryChanged', "", error: e, stackTrace: st);
       if (e is AppException) {
@@ -95,11 +101,13 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         url: ApiConst.baseUrl + ApiConst.searchWall,
       );
 
-      emit(currentState.copyWith(
-        walls: [...currentList, ...walls],
-        page: nextPage,
-        isLoadingNext: false,
-      ));
+      emit(
+        currentState.copyWith(
+          walls: [...currentList, ...walls],
+          page: nextPage,
+          isLoadingNext: false,
+        ),
+      );
     } catch (e, st) {
       emit(currentState.copyWith(isLoadingNext: false));
       log(name: 'SearchFetchNextPage', "", error: e, stackTrace: st);

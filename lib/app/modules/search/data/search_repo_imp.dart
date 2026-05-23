@@ -1,0 +1,15 @@
+import 'package:walpy/app/modules/search/data/search_datasource.dart';
+import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
+import 'package:walpy/app/modules/search/domain/search_repo.dart';
+
+class SearchRepoImp implements SearchRepository {
+  final SearchDatasource _datasource = SearchDatasource();
+
+  @override
+  Future<List<Wallpaper>> searchWallpapers({
+    required Map<String, dynamic> params,
+    required String url,
+  }) async {
+    return await _datasource.fetchSearchWallpapers(params: params, url: url);
+  }
+}

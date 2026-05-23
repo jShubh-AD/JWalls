@@ -142,6 +142,7 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
       } else if (event.url != null) {
         final url = event.url;
         if (url == null) {
+          print("null url: $url");
           emit(
             state.copyWith(
               showSnack: true,
@@ -157,9 +158,10 @@ class ViewImageBloc extends Bloc<ViewImageEvent, ViewImageState> {
       } else {
         bytes = event.bytes!;
       }
+      final extension = AppHelpers.getImageExtension(bytes);
       final AssetEntity? entity = await PhotoManager.editor.saveImage(
         bytes,
-        filename: 'JWalls_${DateTime.now().millisecondsSinceEpoch}',
+        filename: 'JWalls_${DateTime.now().millisecondsSinceEpoch}.$extension',
         title: 'JWalls_${DateTime.now().millisecondsSinceEpoch}',
         desc: 'Saved by JWalls',
       );

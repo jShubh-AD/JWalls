@@ -1,7 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walpy/app/UI/portfolio.dart';
-import 'package:walpy/app/UI/search.dart';
+import 'package:walpy/app/modules/search/presentation/view/search_page.dart';
+import 'package:walpy/app/modules/search/presentation/bloc/search_bloc.dart';
+import 'package:walpy/app/modules/search/domain/search_usecase.dart';
+import 'package:walpy/app/modules/search/data/search_repo_imp.dart';
 import 'package:walpy/app/UI/settings.dart';
 import 'package:walpy/app/modules/favourite/presentation/bloc/favourite_bloc.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
@@ -35,7 +38,12 @@ final appRouter = GoRouter(
     GoRoute(
       name: AppRoutes.search,
       path: '/search',
-      builder: (context, state) => SearchPage(),
+      builder: (context, state) => BlocProvider(
+        create: (context) => SearchBloc(
+          SearchUseCase(SearchRepoImp()),
+        )..add(LoadSearchHistory()),
+        child: const SearchPage(),
+      ),
     ),
     GoRoute(
       name: AppRoutes.fav,

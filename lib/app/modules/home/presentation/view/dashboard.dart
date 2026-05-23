@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:walpy/app/core/app_routes/app_routes.dart';
 import 'package:walpy/app/modules/favourite/presentation/pages/fav.dart';
-import 'package:walpy/app/UI/search.dart';
 import 'package:walpy/app/UI/settings.dart';
 import '../../../../core/utils/const/app_const.dart';
 import 'home.dart';
@@ -58,7 +59,7 @@ class _DashboardState extends State<Dashboard> {
         toolbarHeight: 46,
         actions: [
           GestureDetector(
-            // todo: add navigation to search
+            onTap: () => context.pushNamed(AppRoutes.search),
             child: Icon(
               Icons.search,
               color: darkMode ? Colors.white : Colors.black,

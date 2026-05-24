@@ -30,7 +30,7 @@ abstract class AppHelpers {
       final queryParams = Map<String, String>.from(uri.queryParameters);
 
       queryParams['w'] = 1080.toString();
-      queryParams['q'] = 60.toString();
+      queryParams['q'] = 70.toString();
       queryParams['fm'] = 'webp';
       queryParams['fit'] = 'max';
       queryParams['auto'] = 'format';

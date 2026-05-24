@@ -18,12 +18,14 @@ final class HomeLoaded extends HomeState {
   final List<Wallpaper> walls;
   final int page;
   final bool isLoadingNext;
+  final bool hasPaginationError;
   final String? errorNotification;
 
   const HomeLoaded(
     this.walls, {
     this.page = 1,
     this.isLoadingNext = false,
+    this.hasPaginationError = false,
     this.errorNotification,
   });
 
@@ -32,6 +34,7 @@ final class HomeLoaded extends HomeState {
     int? page,
     bool? isLoadingNext,
     String? errorNotification,
+    bool? hasPaginationError,
     bool clearErrorNotification = false,
   }) {
     return HomeLoaded(
@@ -39,11 +42,18 @@ final class HomeLoaded extends HomeState {
       page: page ?? this.page,
       isLoadingNext: isLoadingNext ?? this.isLoadingNext,
       errorNotification: clearErrorNotification ? null : (errorNotification ?? this.errorNotification),
+      hasPaginationError: hasPaginationError ?? this.hasPaginationError,
     );
   }
 
   @override
-  List<Object?> get props => [walls, page, isLoadingNext, errorNotification];
+  List<Object?> get props => [
+        walls,
+        page,
+        isLoadingNext,
+        hasPaginationError,
+        errorNotification,
+      ];
 }
 
 final class HomeError extends HomeState {

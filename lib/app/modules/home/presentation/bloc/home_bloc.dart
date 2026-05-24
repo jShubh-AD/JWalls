@@ -41,7 +41,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final currentList = currentState.walls;
     final nextPage = currentState.page + 1;
 
-    emit(currentState.copyWith(isLoadingNext: true));
+    emit(currentState.copyWith(
+      isLoadingNext: true,
+      hasPaginationError: false,
+    ));
 
     final Result<List<Wallpaper>, Failure> result = await _useCase.getWallpapers(
       params: {"per_page": ApiConst.per_page, "page": nextPage},
@@ -54,14 +57,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           walls: [...currentList, ...walls],
           page: nextPage,
           isLoadingNext: false,
+          hasPaginationError: false,
         ),
       ),
       onFailure: (Failure failure) {
         emit(currentState.copyWith(
           isLoadingNext: false,
+          hasPaginationError: true,
           errorNotification: failure.message,
         ));
-        emit(currentState.copyWith(clearErrorNotification: true));
+        if (state is HomeLoaded) {
+          emit((state as HomeLoaded).copyWith(clearErrorNotification: true));
+        }
       },
     );
   }

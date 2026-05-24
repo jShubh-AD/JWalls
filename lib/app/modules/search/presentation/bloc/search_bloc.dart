@@ -82,7 +82,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     final currentList = currentState.walls;
     final nextPage = currentState.page + 1;
 
-    emit(currentState.copyWith(isLoadingNext: true));
+    emit(currentState.copyWith(isLoadingNext: true, hasPaginationError: false));
 
     final Result<List<Wallpaper>, Failure> result = await _useCase.searchWallpapers(
       params: {
@@ -99,14 +99,21 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
           walls: [...currentList, ...walls],
           page: nextPage,
           isLoadingNext: false,
+          hasPaginationError: false,
         ),
       ),
       onFailure: (Failure failure) {
+        print("SearchBloc: _onFetchNextSearchPage failed. Emitting first state.");
         emit(currentState.copyWith(
           isLoadingNext: false,
+          hasPaginationError: true,
           errorNotification: failure.message,
         ));
-        emit(currentState.copyWith(clearErrorNotification: true));
+        print("SearchBloc: state after first emit: $state");
+        if (state is SearchLoaded) {
+          emit((state as SearchLoaded).copyWith(clearErrorNotification: true));
+          print("SearchBloc: state after second emit: $state");
+        }
       },
     );
   }

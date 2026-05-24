@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:walpy/app/core/Widgets/error_retry_widget.dart';
 import 'package:walpy/app/core/Widgets/wall.dart';
 import 'package:walpy/app/core/utils/const/app_const.dart';
 import 'package:walpy/app/modules/search/presentation/bloc/search_bloc.dart';
@@ -189,7 +190,6 @@ class _SearchPageState extends State<SearchPage> {
                   expandedHeight: 120,
                   stretch: true,
                   onStretchTrigger: () async {
-                    print("stretch troggresed");
                     context.read<SearchBloc>().add(
                       SearchQueryChanged(_searchController.text.trim()),
                     );
@@ -239,48 +239,10 @@ class _SearchPageState extends State<SearchPage> {
                 else if (state is SearchError)
                   SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 44,
-                              color: Colors.red.shade400,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              state.message,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: darkMode
-                                    ? Colors.white70
-                                    : Colors.black87,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                backgroundColor: darkMode
-                                    ? Colors.white
-                                    : Colors.black,
-                                foregroundColor: darkMode
-                                    ? Colors.black
-                                    : Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                              ),
-                              onPressed: () =>
-                                  _triggerSearch(_searchController.text),
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
+                    child: ErrorRetryWidget(
+                      errorMessage: state.message,
+                      onRetry: () => context.read<SearchBloc>().add(
+                        SearchQueryChanged(_searchController.text.trim()),
                       ),
                     ),
                   )
@@ -320,16 +282,34 @@ class _SearchPageState extends State<SearchPage> {
                         mainAxisSpacing: AppConst.yAxisSpacing,
                         crossAxisSpacing: AppConst.xAxisSpacing,
                         childCount:
-                            state.walls.length + (state.isLoadingNext ? 1 : 0),
+                            state.walls.length +
+                            (state.isLoadingNext || state.hasPaginationError
+                                ? 1
+                                : 0),
                         itemBuilder: (context, index) {
                           if (index >= state.walls.length) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
-                              alignment: Alignment.center,
-                              child: CircularProgressIndicator(
-                                color: darkMode ? Colors.white : Colors.black,
-                              ),
-                            );
+                            if (state.isLoadingNext) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 24,
+                                ),
+                                alignment: Alignment.center,
+                                child: CircularProgressIndicator(
+                                  color: darkMode ? Colors.white : Colors.black,
+                                ),
+                              );
+                            }
+                            if (state.hasPaginationError) {
+                              return ErrorRetryWidget(
+                                isMini: true,
+                                errorMessage: state.errorNotification ?? "",
+                                onRetry: () => context.read<SearchBloc>().add(
+                                  SearchQueryChanged(
+                                    _searchController.text.trim(),
+                                  ),
+                                ),
+                              );
+                            }
                           }
                           return Wall(index, wallInfo: state.walls[index]);
                         },

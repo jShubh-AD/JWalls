@@ -32,13 +32,14 @@ class DioClient {
   final _connectivity = Connectivity();
 
   Future<bool> isOnline() async {
-    final result = await _connectivity.checkConnectivity();
-
-    if (result == ConnectivityResult.none) return false;
-
     try {
-      final lookup = await InternetAddress.lookup('google.com');
-      return lookup.isNotEmpty;
+      final result = await _connectivity.checkConnectivity();
+      if (result.contains(ConnectivityResult.none)) {
+        return false;
+      }
+      final lookup = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 3));
+      return lookup.isNotEmpty && lookup.first.rawAddress.isNotEmpty;
     } catch (_) {
       return false;
     }

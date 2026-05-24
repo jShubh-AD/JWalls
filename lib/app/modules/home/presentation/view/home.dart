@@ -45,7 +45,16 @@ class _HomepageState extends State<Homepage> {
           final walls = state.walls;
           return CustomScrollView(
             controller: _scrollController,
+            physics: BouncingScrollPhysics(),
             slivers: [
+              SliverAppBar(
+                stretch: true,
+                surfaceTintColor: Colors.transparent,
+                toolbarHeight: 0,
+                onStretchTrigger: () async {
+                  context.read<HomeBloc>().add(HomeFetch());
+                },
+              ),
               SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: 5),
                 sliver: SliverMasonryGrid.count(

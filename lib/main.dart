@@ -3,15 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:get/get.dart';
 import 'package:walpy/app/core/app_routes/app_router.dart';
 import 'package:walpy/app/core/network/dio_client.dart';
 import 'package:walpy/app/modules/favourite/data/local_datasource.dart';
 import 'package:walpy/app/modules/home/domain/home_usecase.dart';
 import 'package:walpy/app/modules/home/presentation/bloc/home_bloc.dart';
 import 'package:workmanager/workmanager.dart';
-import 'app/Get_Controller/FeatchApi.dart';
-import 'app/Get_Controller/settings_controller.dart';
 import 'app/core/Theme/SystemTheme.dart';
 import 'app/core/callback_diapatcher.dart';
 import 'app/core/shared_preferences.dart';
@@ -92,10 +89,6 @@ void main() async {
   // Clean up old temp files
   cleanupOldTempFiles();
 
-  // Initialize the settings controller
-  print('🔧 Initializing Settings Controller...');
-  Get.put(WallpaperSettingsController());
-
   // Wait for controller to load preferences
   await Future.delayed(const Duration(milliseconds: 100));
 
@@ -114,8 +107,7 @@ void main() async {
 
   await LocalDatabase.instance.init();
   DioClient.instance;
-
-  Get.put(ApiCall());
+  
   runApp(const MyApp());
 }
 

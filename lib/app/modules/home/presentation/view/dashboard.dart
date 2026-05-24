@@ -25,33 +25,6 @@ class _DashboardState extends State<Dashboard> {
     final darkMode = isDarkMode(context);
 
     return Scaffold(
-      // todo: add FBA for random wall
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: Colors.white,
-      //   onPressed: () async{
-      //     controller.lottiController.repeat(period: Duration(seconds: 2));
-      //     final imageUrl = await _fetchRandomWallpaper(20); // get URL
-      //     if (imageUrl != null) {
-      //       final result = await platform.invokeMethod("setWallpaper", {"imageUrl": imageUrl});
-      //       (result)
-      //           ? Get.snackbar('Wall Applied!', 'Enjoy your new wall.')
-      //           : Get.snackbar('Error', 'Could not apply Wall, Please try again.');
-      //
-      //       print(result ? 'Wallpaper set' : 'Failed');
-      //     }
-      //     controller.lottiController.reset();
-      // }, child: Obx((){
-      //     return Lottie.asset(
-      //         "assets/animations/random_loader.json",
-      //       fit: BoxFit.contain,
-      //       repeat: true,
-      //       animate: controller.isRolling.value,
-      //       controller: controller.lottiController
-      //     );
-      // }
-      // )
-      // ),
-      // resizeToAvoidBottomInset: true,
       appBar: AppBar(
         surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.transparent,
@@ -94,11 +67,7 @@ class _DashboardState extends State<Dashboard> {
           index: index,
           children: const [
             Homepage(),
-            Placeholder(),
-            // SearchPage(),
             FavouritePage(),
-            Placeholder(),
-            // Settings(),
           ],
         ),
       ),
@@ -125,18 +94,6 @@ class _DashboardState extends State<Dashboard> {
             label: 'Home',
           ),
           NavigationDestination(
-            tooltip: "Search area",
-            selectedIcon: Icon(
-              Icons.image,
-              color: darkMode ? Colors.white : Colors.black,
-            ),
-            icon: Icon(
-              Icons.image_outlined,
-              color: darkMode ? Colors.white : Colors.black,
-            ),
-            label: 'Gallery',
-          ),
-          NavigationDestination(
             tooltip: "Favourite zone",
             selectedIcon: Icon(
               Icons.favorite,
@@ -148,52 +105,8 @@ class _DashboardState extends State<Dashboard> {
             ),
             label: 'Fav',
           ),
-          NavigationDestination(
-            tooltip: "Settings",
-            selectedIcon: Icon(
-              Icons.settings,
-              color: darkMode ? Colors.white : Colors.black,
-            ),
-            icon: Icon(
-              Icons.settings_outlined,
-              color: darkMode ? Colors.white : Colors.black,
-            ),
-            label: 'Settings',
-          ),
         ],
       ),
     );
   }
-
-  // Future<String?> _fetchRandomWallpaper(int timeoutSeconds) async {
-  //   try {
-  //     print('set random wallpaper called');
-  //     final url = 'https://api.unsplash.com/photos/random${ApiConst.key}&query=wallpapers';
-  //     print('Fetching wallpaper from: $url');
-  //
-  //     final response = await http.get(Uri.parse(url)).timeout(
-  //         Duration(seconds: timeoutSeconds),
-  //         onTimeout: () => throw Exception('API request timeout')
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final Map<String, dynamic> wallData = jsonDecode(response.body);
-  //       final wallpaper = OldWallpaperModle.fromJson(wallData);
-  //
-  //       if (wallpaper.urls?.full == null) {
-  //         throw Exception('Invalid wallpaper URL received');
-  //       }
-  //       final String fullUrl =  wallpaper.urls!.full!;
-  //
-  //       print('Wallpaper URL: ${wallpaper.urls!.full}');
-  //       return fullUrl;
-  //     } else {
-  //       throw HttpException('API request failed with status: ${response.statusCode}');
-  //     }
-  //
-  //   } catch (e) {
-  //     print('Error fetching wallpaper: $e');
-  //     return null;
-  //   }
-  // }
 }

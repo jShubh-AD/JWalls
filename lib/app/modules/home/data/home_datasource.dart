@@ -4,17 +4,19 @@ import 'package:walpy/app/core/network/dio_client.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 
 class HomeDatasource {
-  final dio = DioClient.instance;
+  final DioClient _dio = DioClient.instance;
 
   Future<List<Wallpaper>> fetchWallpapers({
     required Map<String, dynamic> params,
     required String url,
   }) async {
     try{
-      final response = await dio.performGet(url: url, params: params);
-      return compute(heavyParsing, response.data);
-    }catch(e) {
-      throw AppException(e.toString());
+      final response = await _dio.performGet(url: url, params: params);
+      return await compute(heavyParsing, response.data);
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw UnknownException("Failed to parse wallpapers: $e");
     }
   }
 }

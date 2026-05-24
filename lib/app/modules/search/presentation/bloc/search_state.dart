@@ -31,6 +31,7 @@ final class SearchLoaded extends SearchState {
   final int page;
   final bool isLoadingNext;
   final List<String> history;
+  final String? errorNotification;
 
   const SearchLoaded({
     required this.walls,
@@ -38,6 +39,7 @@ final class SearchLoaded extends SearchState {
     this.page = 1,
     this.isLoadingNext = false,
     required this.history,
+    this.errorNotification,
   });
 
   SearchLoaded copyWith({
@@ -46,6 +48,8 @@ final class SearchLoaded extends SearchState {
     int? page,
     bool? isLoadingNext,
     List<String>? history,
+    String? errorNotification,
+    bool clearErrorNotification = false,
   }) {
     return SearchLoaded(
       walls: walls ?? this.walls,
@@ -53,11 +57,12 @@ final class SearchLoaded extends SearchState {
       page: page ?? this.page,
       isLoadingNext: isLoadingNext ?? this.isLoadingNext,
       history: history ?? this.history,
+      errorNotification: clearErrorNotification ? null : (errorNotification ?? this.errorNotification),
     );
   }
 
   @override
-  List<Object?> get props => [walls, query, page, isLoadingNext, history];
+  List<Object?> get props => [walls, query, page, isLoadingNext, history, errorNotification];
 }
 
 final class SearchError extends SearchState {

@@ -1,3 +1,4 @@
+import 'package:walpy/app/core/network/result.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/search/domain/search_repo.dart';
 
@@ -6,7 +7,7 @@ class SearchUseCase {
 
   SearchUseCase(this.repo);
 
-  Future<List<Wallpaper>> searchWallpapers({
+  Future<Result<List<Wallpaper>, Failure>> searchWallpapers({
     required Map<String, dynamic> params,
     required String url,
   }) async {

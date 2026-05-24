@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walpy/app/core/app_routes/app_routes.dart';
 import 'package:walpy/app/modules/favourite/presentation/pages/fav.dart';
-import 'package:walpy/app/UI/settings.dart';
 import '../../../../core/utils/const/app_const.dart';
 import 'home.dart';
 

@@ -18,9 +18,32 @@ final class HomeLoaded extends HomeState {
   final List<Wallpaper> walls;
   final int page;
   final bool isLoadingNext;
-  const HomeLoaded(this.walls, {this.page = 1, this.isLoadingNext = false});
+  final String? errorNotification;
+
+  const HomeLoaded(
+    this.walls, {
+    this.page = 1,
+    this.isLoadingNext = false,
+    this.errorNotification,
+  });
+
+  HomeLoaded copyWith({
+    List<Wallpaper>? walls,
+    int? page,
+    bool? isLoadingNext,
+    String? errorNotification,
+    bool clearErrorNotification = false,
+  }) {
+    return HomeLoaded(
+      walls ?? this.walls,
+      page: page ?? this.page,
+      isLoadingNext: isLoadingNext ?? this.isLoadingNext,
+      errorNotification: clearErrorNotification ? null : (errorNotification ?? this.errorNotification),
+    );
+  }
+
   @override
-  List<Object> get props => [walls, page, isLoadingNext];
+  List<Object?> get props => [walls, page, isLoadingNext, errorNotification];
 }
 
 final class HomeError extends HomeState {

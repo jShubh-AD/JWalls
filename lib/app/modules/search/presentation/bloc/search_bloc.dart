@@ -1,7 +1,6 @@
-import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:walpy/app/core/app_errors/app_errors.dart';
+import 'package:walpy/app/core/network/result.dart';
 import 'package:walpy/app/core/network/api_const.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/search/domain/search_usecase.dart';
@@ -47,35 +46,29 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
     emit(SearchLoading(history));
 
-    try {
-      await LocalDatabase.instance.addSearchHistory(event.query);
-      final updatedHistory = LocalDatabase.instance.getSearchHistory();
+    await LocalDatabase.instance.addSearchHistory(event.query);
+    final updatedHistory = LocalDatabase.instance.getSearchHistory();
 
-      final walls = await _useCase.searchWallpapers(
-        params: {
-          "query": event.query,
-          "per_page": ApiConst.per_page,
-          "page": 1,
-        },
-        url: ApiConst.baseUrl + ApiConst.searchWall,
-      );
+    final Result<List<Wallpaper>, Failure> result = await _useCase.searchWallpapers(
+      params: {
+        "query": event.query,
+        "per_page": ApiConst.per_page,
+        "page": 1,
+      },
+      url: ApiConst.baseUrl + ApiConst.searchWall,
+    );
 
-      emit(
+    result.fold(
+      onSuccess: (List<Wallpaper> walls) => emit(
         SearchLoaded(
           walls: walls,
           query: event.query,
           page: 1,
           history: updatedHistory,
         ),
-      );
-    } catch (e, st) {
-      log(name: 'SearchQueryChanged', "", error: e, stackTrace: st);
-      if (e is AppException) {
-        emit(SearchError(e.message, e.statusCode));
-      } else {
-        emit(SearchError(e.toString(), null));
-      }
-    }
+      ),
+      onFailure: (Failure failure) => emit(SearchError(failure.message, null)),
+    );
   }
 
   Future<void> _onFetchNextSearchPage(
@@ -91,27 +84,31 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
     emit(currentState.copyWith(isLoadingNext: true));
 
-    try {
-      final walls = await _useCase.searchWallpapers(
-        params: {
-          "query": currentState.query,
-          "per_page": ApiConst.per_page,
-          "page": nextPage,
-        },
-        url: ApiConst.baseUrl + ApiConst.searchWall,
-      );
+    final Result<List<Wallpaper>, Failure> result = await _useCase.searchWallpapers(
+      params: {
+        "query": currentState.query,
+        "per_page": ApiConst.per_page,
+        "page": nextPage,
+      },
+      url: ApiConst.baseUrl + ApiConst.searchWall,
+    );
 
-      emit(
+    result.fold(
+      onSuccess: (List<Wallpaper> walls) => emit(
         currentState.copyWith(
           walls: [...currentList, ...walls],
           page: nextPage,
           isLoadingNext: false,
         ),
-      );
-    } catch (e, st) {
-      emit(currentState.copyWith(isLoadingNext: false));
-      log(name: 'SearchFetchNextPage', "", error: e, stackTrace: st);
-    }
+      ),
+      onFailure: (Failure failure) {
+        emit(currentState.copyWith(
+          isLoadingNext: false,
+          errorNotification: failure.message,
+        ));
+        emit(currentState.copyWith(clearErrorNotification: true));
+      },
+    );
   }
 
   Future<void> _onDeleteSearchHistoryItem(

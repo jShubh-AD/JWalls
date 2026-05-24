@@ -1,8 +1,6 @@
-import 'dart:developer';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:walpy/app/core/app_errors/app_errors.dart';
+import 'package:walpy/app/core/network/result.dart';
 import 'package:walpy/app/core/network/api_const.dart';
 import 'package:walpy/app/modules/home/data/wallaper_response_modle.dart';
 import 'package:walpy/app/modules/home/domain/home_usecase.dart';
@@ -21,20 +19,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> fetchHome(HomeFetch event, Emitter<HomeState> emit) async {
     emit(HomeLoading());
-    try {
-      final walls = await _useCase.getWallpapers(
-        params: {"per_page": ApiConst.per_page, "page": 1},
-        url: ApiConst.baseUrl + ApiConst.fetchImages,
-      );
-      emit(HomeLoaded(walls, page: 1));
-    } catch (e, st) {
-      log(name: 'FetchHome', "", error: e, stackTrace: st);
-      if (e is AppException) {
-        emit(HomeError(e.message, e.statusCode));
-      } else {
-        emit(HomeError(e.toString(), null));
-      }
-    }
+    final Result<List<Wallpaper>, Failure> result = await _useCase.getWallpapers(
+      params: {"per_page": ApiConst.per_page, "page": 1},
+      url: ApiConst.baseUrl + ApiConst.fetchImages,
+    );
+
+    result.fold(
+      onSuccess: (List<Wallpaper> walls) => emit(HomeLoaded(walls, page: 1)),
+      onFailure: (Failure failure) => emit(HomeError(failure.message, null)),
+    );
   }
 
   Future<void> fetchNextPage(
@@ -48,30 +41,28 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final currentList = currentState.walls;
     final nextPage = currentState.page + 1;
 
-    emit(HomeLoaded(currentList, page: currentState.page, isLoadingNext: true));
+    emit(currentState.copyWith(isLoadingNext: true));
 
-    try {
-      final walls = await _useCase.getWallpapers(
-        params: {"per_page": ApiConst.per_page, "page": nextPage},
-        url: ApiConst.baseUrl + ApiConst.fetchImages,
-      );
-      emit(
-        HomeLoaded(
-          [...currentList, ...walls],
+    final Result<List<Wallpaper>, Failure> result = await _useCase.getWallpapers(
+      params: {"per_page": ApiConst.per_page, "page": nextPage},
+      url: ApiConst.baseUrl + ApiConst.fetchImages,
+    );
+
+    result.fold(
+      onSuccess: (List<Wallpaper> walls) => emit(
+        currentState.copyWith(
+          walls: [...currentList, ...walls],
           page: nextPage,
           isLoadingNext: false,
         ),
-      );
-    } catch (e, st) {
-      emit(
-        HomeLoaded(currentList, page: currentState.page, isLoadingNext: false),
-      );
-      log(name: 'HomeLoadingNext', "", error: e, stackTrace: st);
-      if (e is AppException) {
-        emit(HomeError(e.message, e.statusCode));
-      } else {
-        emit(HomeError(e.toString(), null));
-      }
-    }
+      ),
+      onFailure: (Failure failure) {
+        emit(currentState.copyWith(
+          isLoadingNext: false,
+          errorNotification: failure.message,
+        ));
+        emit(currentState.copyWith(clearErrorNotification: true));
+      },
+    );
   }
 }

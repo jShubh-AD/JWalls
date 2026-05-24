@@ -13,9 +13,11 @@ class SearchDatasource {
     try {
       final response = await dio.performGet(url: url, params: params);
       final results = response.data['results'];
-      return compute(heavySearchParsing, results);
+      return await compute(heavySearchParsing, results);
+    } on AppException {
+      rethrow;
     } catch (e) {
-      throw AppException(e.toString());
+      throw UnknownException("Failed to parse search results: $e");
     }
   }
 }

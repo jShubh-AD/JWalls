@@ -50,43 +50,56 @@ class DioClient {
     required Map<String, dynamic> params,
   }) async {
     if(!await isOnline()){
-      throw AppException("No internet connection", statusCode: null);
+      throw const NoInternetException();
     }
     try{
       final response = await _dio.get(url,queryParameters: params);
       return response;
     }on DioException catch(e){
-      if(e.type == DioExceptionType.badResponse && e.response?.data != null){
-        switch (e.response?.statusCode){
-          case 403:
-            throw AppException(
-                statusCode: 403,
-                "You have exceeded you limit for this hour.\nPlease try after 1 hour"
-            );
-          default:
-            final serverError = ErrorResponse.fromJson(e.response!.data);
-            throw AppException(
-                serverError.errors?.first ?? _handleError(e),
-                statusCode: e.response?.statusCode
-            );
-        }
-      }
-      throw AppException(_handleError(e));
+      throw _mapDioException(e);
     }
   }
 
-  String _handleError(DioException error) {
+  AppException _mapDioException(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return 'Connection timeout. Please check your internet connection.';
-      case DioExceptionType.badResponse:
-        return 'Server error: ${error.response?.statusCode}';
+        return const TimeoutException();
       case DioExceptionType.cancel:
-        return 'Request cancelled';
+        return const RequestCancelledException();
+      case DioExceptionType.badResponse:
+        final response = error.response;
+        if (response == null) {
+          return const UnknownException("Empty error response from server.");
+        }
+
+        String? serverMessage;
+        try {
+          if (response.data != null) {
+            final serverError = ErrorResponse.fromJson(response.data);
+            serverMessage = serverError.errors?.first;
+          }
+        } catch (_) {}
+
+        switch (response.statusCode) {
+          case 401:
+            return const UnauthorizedException();
+          case 403:
+            return const RateLimitException();
+          case 404:
+            return NotFoundException(serverMessage ?? "Requested resource not found.");
+          default:
+            return ServerException(
+              response.statusCode ?? 500,
+              serverMessage ?? "Server error: ${response.statusCode}",
+            );
+        }
       default:
-        return 'Network error. Please try again.';
+        if (error.error is SocketException) {
+          return const NoInternetException();
+        }
+        return UnknownException(error.message ?? "An unexpected network error occurred.");
     }
   }
 }
